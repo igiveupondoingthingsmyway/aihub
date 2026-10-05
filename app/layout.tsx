@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Instrument_Serif } from "next/font/google";
-import Link from "next/link";
+import { Space_Grotesk } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import "./globals.css";
 
-const sans = Geist({ subsets: ["latin"], variable: "--font-sans" });
-const display = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-display" });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: { default: "AI Hub: Discover the AI world", template: "%s | AI Hub" },
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable}`}>
+    <html lang="en" className={spaceGrotesk.variable}>
       <body className="min-h-screen bg-bg font-sans text-fg antialiased">
         <div
           aria-hidden
