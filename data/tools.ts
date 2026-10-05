@@ -4,7 +4,7 @@ import type { AITool } from "@/lib/types";
 export const tools: AITool[] = [
   {
     slug: "chatgpt", name: "ChatGPT", company: "OpenAI", featured: true, color: "#10A37F",
-    description: "A general-purpose assistant for writing, analysis, coding and everyday questions, with voice, image and file support.",
+    description: "The best-known chatbot and probably the easiest way into the whole topic. It handles almost anything: drafting an email, untangling a confusing text, helping with code, brainstorming ideas. It understands voice, images and files, so you can snap a photo of a problem or upload a document and just ask about it. There's a free version, and the paid plan adds stronger models and higher limits.",
     categories: ["AI Chat", "Writing", "Coding"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Plus", price: "$20/mo" }, { name: "Pro", price: "$200/mo" }],
     features: ["Conversational assistant with memory", "Image generation and analysis", "Voice conversations", "File uploads and data analysis"],
@@ -12,7 +12,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "claude", name: "Claude", company: "Anthropic", featured: true, color: "#D97757",
-    description: "A thoughtful assistant known for long-context reading, careful writing and dependable help with code.",
+    description: "Particularly good with long material: you can drop in a big report or contract and work through it calmly. It writes carefully, without a lot of filler, and tends to make things up less when it isn't sure. People often choose it for programming and document work. There's a free tier, with paid plans for heavier use.",
     categories: ["AI Chat", "Writing", "Coding"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$20/mo" }, { name: "Max", price: "From $100/mo" }],
     features: ["Large context window for long documents", "Projects with shared knowledge", "Artifacts for building apps and documents", "Agentic coding with Claude Code"],
@@ -20,7 +20,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "gemini", name: "Gemini", company: "Google", featured: true, color: "#4C8BF5",
-    description: "Google's multimodal assistant, built into Search, Workspace and Android for work across text, images and video.",
+    description: "Google's assistant, built into things many people already use: Search, Gmail, Docs and Android. If you live in the Google ecosystem, it's convenient because nothing has to be moved over by hand. It works with text, images and video. The basic version is free.",
     categories: ["AI Chat", "Research", "Productivity"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "AI Pro", price: "$19.99/mo" }],
     features: ["Native multimodal understanding", "Deep integration with Gmail and Docs", "Deep Research reports", "Very long context"],
@@ -28,7 +28,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "grok", name: "Grok", company: "xAI", color: "#E6E8EE",
-    description: "A conversational model with real-time access to posts on X, designed to be direct and a little irreverent.",
+    description: "A chatbot from xAI (Elon Musk's company) with access to posts on X, which makes it a good pick when you want to know what people are talking about right now. Its answers are blunter and looser than most, sometimes with a bit of humor. Some features are free, the rest sit behind a subscription.",
     categories: ["AI Chat", "Research"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "SuperGrok", price: "$30/mo" }],
     features: ["Live data from X", "Image generation", "Reasoning mode", "Web search built in"],
@@ -36,7 +36,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "deepseek", name: "DeepSeek", company: "DeepSeek", color: "#4D6BFE",
-    description: "Open-weight models with strong reasoning and coding ability, available free in chat and cheap through the API.",
+    description: "A Chinese model that surprised people by offering open weights along with genuinely strong reasoning and coding. It's free to use in chat, and through the API it costs noticeably less than its competitors. A good option if you want to save money or run a model yourself.",
     categories: ["AI Chat", "Coding"], pricing: "Free",
     plans: [{ name: "Chat", price: "$0" }, { name: "API", price: "Pay as you go" }],
     features: ["Open-weight model releases", "Step-by-step reasoning mode", "Low-cost API", "Strong code generation"],
@@ -44,7 +44,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "perplexity", name: "Perplexity", company: "Perplexity AI", featured: false, color: "#20B8CD",
-    description: "An answer engine that searches the web and responds with cited sources, built for fast, trustworthy research.",
+    description: "Less a chatbot than a new kind of search engine. You ask a question, it searches the web itself and answers with sources attached, so you can check the answer right away. Handy for quick research when you need facts rather than chat. There's a free mode and a paid Pro plan.",
     categories: ["Research", "AI Chat"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$20/mo" }],
     features: ["Every answer cites its sources", "Focus modes for academic and web search", "Deep Research for longer reports", "Choice of underlying models"],
@@ -52,7 +52,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "copilot", name: "Copilot", company: "Microsoft", color: "#7C6CFF",
-    description: "Microsoft's assistant across Windows, Edge and Microsoft 365, helping with documents, spreadsheets and meetings.",
+    description: "Microsoft's assistant, built into Windows, the Edge browser and Microsoft 365. It can draft text in Word, make sense of a spreadsheet in Excel, put together a presentation or summarize a meeting. Most useful for people who already spend their day in Microsoft's office apps.",
     categories: ["Productivity", "AI Chat", "Writing"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Microsoft 365 Premium", price: "$19.99/mo" }],
     features: ["Built into Word, Excel and Outlook", "Meeting summaries in Teams", "Web grounding with citations", "Image creation"],
@@ -60,7 +60,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "mistral", name: "Mistral", company: "Mistral AI", color: "#FA520F",
-    description: "A European lab offering fast open and commercial models, with Le Chat as its everyday assistant.",
+    description: "A French company and one of Europe's main players in AI. It makes fast models, some of them open source, plus its own assistant, Le Chat, for everyday tasks. A fit for anyone who values speed and independence from American and Chinese services.",
     categories: ["AI Chat", "Coding"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$14.99/mo" }],
     features: ["Le Chat assistant with web search", "Open-weight models", "Codestral for code completion", "Flexible API and self-hosting"],
@@ -68,7 +68,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "midjourney", name: "Midjourney", company: "Midjourney", color: "#C9CCD6",
-    description: "An image model prized for its distinctive aesthetic, used by designers and artists for concept work.",
+    description: "An image generator valued for its distinctive, almost painterly look. Results often seem like an illustrator's work, which is why designers and artists use it for concepts and references. There's no free tier; access is subscription-only.",
     categories: ["Image Generation"], pricing: "Paid",
     plans: [{ name: "Basic", price: "$10/mo" }, { name: "Standard", price: "$30/mo" }],
     features: ["High-fidelity stylised images", "Style and character references", "Web editor with inpainting", "Short video generation"],
@@ -76,7 +76,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "runway", name: "Runway", company: "Runway", color: "#E4E7EC",
-    description: "A creative suite for generating and editing video from text, images and existing footage.",
+    description: "A video platform: generate a clip from a description or an image, or rework footage you've already shot. Remove an object from a frame, change the style, extend a scene. Useful for music videos, ads and experiments. There's a free starter plan with limits.",
     categories: ["Video", "Image Generation"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Standard", price: "$12/mo" }],
     features: ["Text and image to video", "Motion and camera controls", "Video-to-video editing", "Green screen and object removal"],
@@ -84,7 +84,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "cursor", name: "Cursor", company: "Anysphere", color: "#B4B8C4",
-    description: "A code editor with AI built in, able to read your whole codebase and make changes across files.",
+    description: "A code editor with AI built in. It sees your whole project rather than a single file and can make edits across several places at once based on your description. Developers use it to write code faster and to get their bearings in someone else's. The basic version is free.",
     categories: ["Coding", "Productivity"], pricing: "Freemium",
     plans: [{ name: "Hobby", price: "$0" }, { name: "Pro", price: "$20/mo" }],
     features: ["Codebase-aware chat", "Multi-file edits", "Inline autocomplete", "Works with your VS Code setup"],
@@ -92,7 +92,7 @@ export const tools: AITool[] = [
   },
   {
     slug: "elevenlabs", name: "ElevenLabs", company: "ElevenLabs", color: "#F1F2F5",
-    description: "Natural text-to-speech and voice cloning in dozens of languages, for narration, dubbing and apps.",
+    description: "A voice service that turns text into remarkably lifelike speech, clones voices, and dubs videos into other languages while keeping the intonation. Good for podcasts, videos, audiobooks and apps. There's a free plan with a limited allowance.",
     categories: ["Audio"], pricing: "Freemium",
     plans: [{ name: "Free", price: "$0" }, { name: "Starter", price: "$5/mo" }],
     features: ["Realistic text-to-speech", "Voice cloning", "Automatic dubbing", "Developer API"],
