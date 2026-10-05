@@ -24,21 +24,7 @@ export function ToolLogo({
         width={size === "lg" ? 40 : 28}
         height={size === "lg" ? 40 : 28}
         className="h-auto w-auto rounded-lg"
-        onError={(event) => {
-          event.currentTarget.style.display = "none";
-          const fallback = event.currentTarget.nextElementSibling;
-          if (fallback) fallback.classList.remove("hidden");
-        }}
       />
-      <span
-        className={cn(
-          "hidden font-sans font-semibold",
-          size === "lg" ? "text-2xl" : "text-lg"
-        )}
-        style={{ color: tool.color }}
-      >
-        {tool.name[0]}
-      </span>
     </div>
   );
 }
