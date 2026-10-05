@@ -1,0 +1,103 @@
+import type { AITool } from "@/lib/types";
+
+// Placeholder data. Prices and features are illustrative and will change once a real source exists.
+export const tools: AITool[] = [
+  {
+    slug: "chatgpt", name: "ChatGPT", company: "OpenAI", featured: true, color: "#10A37F",
+    description: "A general-purpose assistant for writing, analysis, coding and everyday questions, with voice, image and file support.",
+    categories: ["AI Chat", "Writing", "Coding"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Plus", price: "$20/mo" }, { name: "Pro", price: "$200/mo" }],
+    features: ["Conversational assistant with memory", "Image generation and analysis", "Voice conversations", "File uploads and data analysis"],
+    url: "https://chatgpt.com",
+  },
+  {
+    slug: "claude", name: "Claude", company: "Anthropic", featured: true, color: "#D97757",
+    description: "A thoughtful assistant known for long-context reading, careful writing and dependable help with code.",
+    categories: ["AI Chat", "Writing", "Coding"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$20/mo" }, { name: "Max", price: "From $100/mo" }],
+    features: ["Large context window for long documents", "Projects with shared knowledge", "Artifacts for building apps and documents", "Agentic coding with Claude Code"],
+    url: "https://claude.ai",
+  },
+  {
+    slug: "gemini", name: "Gemini", company: "Google", featured: true, color: "#4C8BF5",
+    description: "Google's multimodal assistant, built into Search, Workspace and Android for work across text, images and video.",
+    categories: ["AI Chat", "Research", "Productivity"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "AI Pro", price: "$19.99/mo" }],
+    features: ["Native multimodal understanding", "Deep integration with Gmail and Docs", "Deep Research reports", "Very long context"],
+    url: "https://gemini.google.com",
+  },
+  {
+    slug: "grok", name: "Grok", company: "xAI", color: "#E6E8EE",
+    description: "A conversational model with real-time access to posts on X, designed to be direct and a little irreverent.",
+    categories: ["AI Chat", "Research"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "SuperGrok", price: "$30/mo" }],
+    features: ["Live data from X", "Image generation", "Reasoning mode", "Web search built in"],
+    url: "https://grok.com",
+  },
+  {
+    slug: "deepseek", name: "DeepSeek", company: "DeepSeek", color: "#4D6BFE",
+    description: "Open-weight models with strong reasoning and coding ability, available free in chat and cheap through the API.",
+    categories: ["AI Chat", "Coding"], pricing: "Free",
+    plans: [{ name: "Chat", price: "$0" }, { name: "API", price: "Pay as you go" }],
+    features: ["Open-weight model releases", "Step-by-step reasoning mode", "Low-cost API", "Strong code generation"],
+    url: "https://www.deepseek.com",
+  },
+  {
+    slug: "perplexity", name: "Perplexity", company: "Perplexity AI", featured: false, color: "#20B8CD",
+    description: "An answer engine that searches the web and responds with cited sources, built for fast, trustworthy research.",
+    categories: ["Research", "AI Chat"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$20/mo" }],
+    features: ["Every answer cites its sources", "Focus modes for academic and web search", "Deep Research for longer reports", "Choice of underlying models"],
+    url: "https://www.perplexity.ai",
+  },
+  {
+    slug: "copilot", name: "Copilot", company: "Microsoft", color: "#7C6CFF",
+    description: "Microsoft's assistant across Windows, Edge and Microsoft 365, helping with documents, spreadsheets and meetings.",
+    categories: ["Productivity", "AI Chat", "Writing"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Microsoft 365 Premium", price: "$19.99/mo" }],
+    features: ["Built into Word, Excel and Outlook", "Meeting summaries in Teams", "Web grounding with citations", "Image creation"],
+    url: "https://copilot.microsoft.com",
+  },
+  {
+    slug: "mistral", name: "Mistral", company: "Mistral AI", color: "#FA520F",
+    description: "A European lab offering fast open and commercial models, with Le Chat as its everyday assistant.",
+    categories: ["AI Chat", "Coding"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Pro", price: "$14.99/mo" }],
+    features: ["Le Chat assistant with web search", "Open-weight models", "Codestral for code completion", "Flexible API and self-hosting"],
+    url: "https://chat.mistral.ai",
+  },
+  {
+    slug: "midjourney", name: "Midjourney", company: "Midjourney", color: "#C9CCD6",
+    description: "An image model prized for its distinctive aesthetic, used by designers and artists for concept work.",
+    categories: ["Image Generation"], pricing: "Paid",
+    plans: [{ name: "Basic", price: "$10/mo" }, { name: "Standard", price: "$30/mo" }],
+    features: ["High-fidelity stylised images", "Style and character references", "Web editor with inpainting", "Short video generation"],
+    url: "https://www.midjourney.com",
+  },
+  {
+    slug: "runway", name: "Runway", company: "Runway", color: "#E4E7EC",
+    description: "A creative suite for generating and editing video from text, images and existing footage.",
+    categories: ["Video", "Image Generation"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Standard", price: "$12/mo" }],
+    features: ["Text and image to video", "Motion and camera controls", "Video-to-video editing", "Green screen and object removal"],
+    url: "https://runwayml.com",
+  },
+  {
+    slug: "cursor", name: "Cursor", company: "Anysphere", color: "#B4B8C4",
+    description: "A code editor with AI built in, able to read your whole codebase and make changes across files.",
+    categories: ["Coding", "Productivity"], pricing: "Freemium",
+    plans: [{ name: "Hobby", price: "$0" }, { name: "Pro", price: "$20/mo" }],
+    features: ["Codebase-aware chat", "Multi-file edits", "Inline autocomplete", "Works with your VS Code setup"],
+    url: "https://cursor.com",
+  },
+  {
+    slug: "elevenlabs", name: "ElevenLabs", company: "ElevenLabs", color: "#F1F2F5",
+    description: "Natural text-to-speech and voice cloning in dozens of languages, for narration, dubbing and apps.",
+    categories: ["Audio"], pricing: "Freemium",
+    plans: [{ name: "Free", price: "$0" }, { name: "Starter", price: "$5/mo" }],
+    features: ["Realistic text-to-speech", "Voice cloning", "Automatic dubbing", "Developer API"],
+    url: "https://elevenlabs.io",
+  },
+];
+
+export const getTool = (slug: string) => tools.find((t) => t.slug === slug);
