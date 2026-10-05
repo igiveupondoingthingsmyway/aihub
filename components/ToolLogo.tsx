@@ -1,1 +1,44 @@
-import type { AITool } from "@/lib/types";\nimport { cn } from "@/lib/utils";\n\nexport function ToolLogo({\n  tool,\n  size = "md",\n}: {\n  tool: Pick<AITool, "name" | "color" | "url">;\n  size?: "md" | "lg";\n}) {\n  const domain = new URL(tool.url).hostname.replace(/^www\./, "");\n\n  return (\n    <div\n      className={cn(\n        "flex shrink-0 items-center justify-center overflow-hidden border bg-white/5",\n        size === "lg" ? "h-16 w-16 rounded-2xl" : "h-11 w-11 rounded-xl"\n      )}\n      style={{ borderColor: `${tool.color}30` }}\n    >\n      <img\n        src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}\n        alt=""\n        width={size === "lg" ? 40 : 28}\n        height={size === "lg" ? 40 : 28}\n        className="h-auto w-auto rounded-lg"\n        onError={(event) => {\n          event.currentTarget.style.display = "none";\n          const fallback = event.currentTarget.nextElementSibling;\n          if (fallback) fallback.classList.remove("hidden");\n        }}\n      />\n      <span\n        className={cn(\n          "hidden font-sans font-semibold",\n          size === "lg" ? "text-2xl" : "text-lg"\n        )}\n        style={{ color: tool.color }}\n      >\n        {tool.name[0]}\n      </span>\n    </div>\n  );\n}\n
+import type { AITool } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+export function ToolLogo({
+  tool,
+  size = "md",
+}: {
+  tool: Pick<AITool, "name" | "color" | "url">;
+  size?: "md" | "lg";
+}) {
+  const domain = new URL(tool.url).hostname.replace(/^www\./, "");
+
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center overflow-hidden border bg-white/5",
+        size === "lg" ? "h-16 w-16 rounded-2xl" : "h-11 w-11 rounded-xl"
+      )}
+      style={{ borderColor: `${tool.color}30` }}
+    >
+      <img
+        src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+        alt=""
+        width={size === "lg" ? 40 : 28}
+        height={size === "lg" ? 40 : 28}
+        className="h-auto w-auto rounded-lg"
+        onError={(event) => {
+          event.currentTarget.style.display = "none";
+          const fallback = event.currentTarget.nextElementSibling;
+          if (fallback) fallback.classList.remove("hidden");
+        }}
+      />
+      <span
+        className={cn(
+          "hidden font-sans font-semibold",
+          size === "lg" ? "text-2xl" : "text-lg"
+        )}
+        style={{ color: tool.color }}
+      >
+        {tool.name[0]}
+      </span>
+    </div>
+  );
+}
