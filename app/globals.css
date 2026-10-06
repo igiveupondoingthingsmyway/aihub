@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 html { scroll-behavior: smooth; }
-::selection { background: rgba(169, 187, 255, 0.28); }
-:focus-visible { outline: 2px solid #a9bbff; outline-offset: 3px; border-radius: 8px; }
+body { letter-spacing: -0.015em; }
+::selection { background: rgba(255, 255, 255, 0.2); color: #fff; }
+:focus-visible { outline: 1px solid #fff; outline-offset: 3px; }
 
 @layer utilities {
   .no-scrollbar { scrollbar-width: none; }
