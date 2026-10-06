@@ -5,17 +5,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: "#0E1014",
-        surface: "#14171D",
-        raised: "#1A1E26",
-        line: "#252A35",
-        muted: "#8B93A3",
-        fg: "#ECEFF4",
-        accent: "#A9BBFF",
+        bg: "#0B0B0B",
+        surface: "#111111",
+        raised: "#181818",
+        line: "#2A2A2A",
+        muted: "#8A8A8A",
+        fg: "#F2F2F2",
+        accent: "#FFFFFF",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "monospace"],
       },
     },
   },
