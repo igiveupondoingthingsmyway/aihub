@@ -2,33 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-html { scroll-behavior: smooth; }
+:root {
+  --font-yzy: "IBM Plex Mono", "Courier New", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-yzy);
   font-weight: 400;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.025em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, button, nav, input, textarea, select {
-  font-family: Arial, Helvetica, sans-serif;
+h1, h2, h3, h4, h5, h6,
+button, nav, input, textarea, select, a {
+  font-family: var(--font-yzy);
 }
 
-h1 {
+h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.045em;
 }
 
-::selection { background: rgba(255, 255, 255, 0.2); color: #fff; }
-:focus-visible { outline: 1px solid #fff; outline-offset: 3px; }
+button,
+input,
+textarea,
+select {
+  font-weight: 400;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
 
 @layer utilities {
-  .no-scrollbar { scrollbar-width: none; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  * {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
