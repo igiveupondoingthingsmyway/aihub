@@ -6,27 +6,13 @@ import { ToolLogo } from "./ToolLogo";
 
 export function ToolCard({ tool, featured = false }: { tool: AITool; featured?: boolean }) {
   return (
-    <Link
-      href={`/tools/${tool.slug}`}
-      className={cn(
-        "group flex flex-col rounded-2xl border border-line transition-colors duration-200 hover:border-white/25 hover:bg-raised",
-        featured ? "bg-surface p-7" : "bg-surface/60 p-6"
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <ToolLogo tool={tool} size={featured ? "lg" : "md"} />
-        <PricingBadge pricing={tool.pricing} />
-      </div>
-      <div className="mt-5">
-        <h3 className="text-lg font-medium text-fg">{tool.name}</h3>
-        <p className="text-sm text-muted">{tool.company}</p>
-      </div>
-      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">{tool.description}</p>
-      <div className="mt-auto flex items-center justify-between pt-6">
-        <span className="text-sm text-muted">{tool.categories[0]}</span>
-        <span className="rounded-full border border-line px-4 py-1.5 text-sm text-fg transition-colors duration-200 group-hover:border-fg group-hover:bg-fg group-hover:text-bg">
-          Open
-        </span>
+    <Link href={`/tools/${tool.slug}`} className={cn("group flex min-h-[340px] flex-col bg-surface p-6 transition-colors duration-200 hover:bg-raised", featured ? "min-h-[390px] p-7" : "")}>
+      <div className="flex items-start justify-between"><ToolLogo tool={tool} size={featured ? "lg" : "md"} /><PricingBadge pricing={tool.pricing} /></div>
+      <div className="mt-auto">
+        <div className="mb-2 flex items-baseline justify-between gap-4"><h3 className="text-base font-medium tracking-tight text-fg">{tool.name}</h3><span className="text-[9px] uppercase tracking-[0.12em] text-muted opacity-0 transition-opacity group-hover:opacity-100">View →</span></div>
+        <p className="text-[10px] uppercase tracking-[0.1em] text-muted">{tool.company}</p>
+        <p className="mt-4 line-clamp-3 text-xs leading-6 text-muted">{tool.description}</p>
+        <div className="mt-6 flex items-center justify-between border-t border-line pt-4"><span className="text-[9px] uppercase tracking-[0.12em] text-muted">{tool.categories[0]}</span><span className="text-[9px] uppercase tracking-[0.12em] text-fg">Open ↗</span></div>
       </div>
     </Link>
   );
