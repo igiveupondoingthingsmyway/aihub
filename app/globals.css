@@ -5,8 +5,19 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  letter-spacing: -0.025em;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  text-rendering: geometricPrecision;
+}
+
+h1, h2, h3, h4, button, nav {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+h1 {
+  font-weight: 500;
+  letter-spacing: -0.065em;
 }
 
 ::selection { background: rgba(255, 255, 255, 0.2); color: #fff; }
