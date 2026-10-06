@@ -1,18 +1,29 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 import { categories } from "@/data/categories";
 import { tools } from "@/data/tools";
-import type { Category } from "@/lib/types";
+import type { AITool, Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ToolCard } from "./ToolCard";
 
 export function Directory() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "All">("All");
+  const [results, setResults] = useState<AITool[]>(tools);
   const q = query.trim().toLowerCase();
   const filtering = q !== "" || category !== "All";
-  const results = useMemo(() => tools.filter((t) => (category === "All" || t.categories.includes(category)) && (q === "" || [t.name, t.company, t.description, ...t.categories].some((s) => s.toLowerCase().includes(q)))), [q, category]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ q, category });
+    fetch(`/api/search?${params.toString()}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data?.results) setResults(data.results); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [q, category]);
+
   const chip = (active: boolean) => cn("flex shrink-0 items-center gap-2 border px-3 py-2 text-[10px] uppercase tracking-[0.08em] transition-colors", active ? "border-fg bg-fg text-bg" : "border-line text-muted hover:border-white/50 hover:text-fg");
 
   return (
