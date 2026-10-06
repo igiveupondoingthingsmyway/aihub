@@ -5,19 +5,20 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: 400;
-  letter-spacing: -0.035em;
-  text-rendering: geometricPrecision;
+  letter-spacing: -0.018em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, button, nav {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+h1, h2, h3, h4, button, nav, input, textarea, select {
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 h1 {
-  font-weight: 500;
-  letter-spacing: -0.065em;
+  font-weight: 400;
+  letter-spacing: -0.055em;
 }
 
 ::selection { background: rgba(255, 255, 255, 0.2); color: #fff; }
