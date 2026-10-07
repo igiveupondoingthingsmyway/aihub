@@ -7,8 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 
 function passwordStrength(password: string) {
   let score = 0;
+  if (password.length >= 6) score++;
   if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
   if (/\d/.test(password)) score++;
   if (/[^A-Za-z0-9]/.test(password)) score++;
@@ -24,10 +24,12 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const strength = useMemo(() => passwordStrength(password), [password]);
+  const passwordValid = password.length >= 6 && /[A-Z]/.test(password);
   const strengthLabel = ["", "Very weak", "Weak", "Fair", "Strong", "Very strong"][strength];
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!passwordValid) return;
     setLoading(true);
     setMessage("");
 
@@ -97,7 +99,7 @@ export default function SignupPage() {
             <div className="relative">
               <input
                 required
-                minLength={8}
+                minLength={6}
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -114,6 +116,9 @@ export default function SignupPage() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            <span className="mt-2 block text-[10px] uppercase tracking-[0.08em] text-muted">
+              Password must be at least 6 characters and include an uppercase letter.
+            </span>
           </label>
 
           {password && (
@@ -133,7 +138,7 @@ export default function SignupPage() {
           {message && <p className="border border-line px-4 py-3 text-xs leading-5 text-muted">{message}</p>}
 
           <button
-            disabled={loading || strength < 3}
+            disabled={loading || !passwordValid}
             className="flex h-12 w-full items-center justify-center gap-3 bg-fg text-bg text-[11px] uppercase tracking-[0.12em] disabled:opacity-50"
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : <>Create account <ArrowRight size={15} /></>}
