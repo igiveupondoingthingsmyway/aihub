@@ -131,3 +131,100 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute procedure public.handle_new_user();
 
 alter publication supabase_realtime add table public.messages;
+
+
+-- Friend system RPCs
+
+create or replace function public.accept_friend_request(request_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  req public.friend_requests%rowtype;
+  me uuid := auth.uid();
+begin
+  if me is null then raise exception 'Not authenticated'; end if;
+
+  select * into req
+  from public.friend_requests
+  where id = request_id
+    and receiver_id = me
+    and status = 'pending'
+  for update;
+
+  if not found then raise exception 'Friend request not found'; end if;
+
+  update public.friend_requests
+  set status = 'accepted'
+  where id = req.id;
+
+  insert into public.friendships (user_id, friend_id)
+  values (req.sender_id, req.receiver_id), (req.receiver_id, req.sender_id)
+  on conflict do nothing;
+end;
+$$;
+
+create or replace function public.remove_friend(friend_user uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+begin
+  if me is null or friend_user is null or me = friend_user then
+    raise exception 'Invalid users';
+  end if;
+
+  delete from public.friendships
+  where (user_id = me and friend_id = friend_user)
+     or (user_id = friend_user and friend_id = me);
+
+  update public.friend_requests
+  set status = 'declined'
+  where ((sender_id = me and receiver_id = friend_user)
+      or (sender_id = friend_user and receiver_id = me))
+    and status = 'accepted';
+end;
+$$;
+
+create or replace function public.cancel_friend_request(request_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from public.friend_requests
+  where id = request_id
+    and sender_id = auth.uid()
+    and status = 'pending';
+
+  if not found then raise exception 'Friend request not found'; end if;
+end;
+$$;
+
+create or replace function public.reject_friend_request(request_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.friend_requests
+  set status = 'declined'
+  where id = request_id
+    and receiver_id = auth.uid()
+    and status = 'pending';
+
+  if not found then raise exception 'Friend request not found'; end if;
+end;
+$$;
+
+grant execute on function public.accept_friend_request(uuid) to authenticated;
+grant execute on function public.remove_friend(uuid) to authenticated;
+grant execute on function public.cancel_friend_request(uuid) to authenticated;
+grant execute on function public.reject_friend_request(uuid) to authenticated;
