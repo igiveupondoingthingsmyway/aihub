@@ -17,7 +17,6 @@ type MessageNotification = {
   type: "message" | "friend_accepted";
   sender_id: string;
   message_id: string | null;
-  friend_request_id: string | null;
   created_at: string;
   sender?: { username: string; avatar_url: string };
 };
@@ -63,29 +62,38 @@ export function Navbar() {
         );
       }
 
-      const { data: notificationRows } = await supabase
+      // Load both message and friend-accepted notifications.
+      // Do not select friend_request_id here; the UI does not need it.
+      const { data: notificationRows, error: notificationError } = await supabase
         .from("notifications")
-        .select("id,type,sender_id,message_id,friend_request_id,created_at")
+        .select("id,type,sender_id,message_id,created_at")
         .eq("user_id", userId)
         .is("read_at", null)
         .order("created_at", { ascending: false })
         .limit(12);
 
+      if (notificationError) {
+        console.error("[SHB notifications]", notificationError);
+        setMessageNotifications([]);
+        return;
+      }
+
       if (!notificationRows?.length) {
         setMessageNotifications([]);
-      } else {
-        const { data: senders } = await supabase
-          .from("profiles")
-          .select("id,username,avatar_url")
-          .in("id", notificationRows.map((row) => row.sender_id));
-
-        setMessageNotifications(
-          notificationRows.map((row) => ({
-            ...row,
-            sender: senders?.find((profile) => profile.id === row.sender_id),
-          }))
-        );
+        return;
       }
+
+      const { data: senders } = await supabase
+        .from("profiles")
+        .select("id,username,avatar_url")
+        .in("id", notificationRows.map((row) => row.sender_id));
+
+      setMessageNotifications(
+        notificationRows.map((row) => ({
+          ...row,
+          sender: senders?.find((profile) => profile.id === row.sender_id),
+        }))
+      );
     }
 
     async function load() {
@@ -229,7 +237,7 @@ export function Navbar() {
                           </Link>
                         ))}
 
-                        {messageNotifications.slice(0, 6).map((notification) => {
+                        {messageNotifications.slice(0, 8).map((notification) => {
                           const isAccepted = notification.type === "friend_accepted";
                           const username = notification.sender?.username || "user";
 
