@@ -187,7 +187,32 @@ export default function MessagesPage() {
           {notice && <p className="mt-4 text-[10px] uppercase tracking-[0.08em] text-muted">{notice}</p>}
 
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friend requests {requests.length > 0 && "/" + requests.length}</div>
-          {requests.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No pending requests.</p> : <div>{requests.map(request => request.sender && <div key={request.id} className="flex items-center gap-3 border-b border-line py-4"><span className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line">{request.sender.avatar_url ? <img src={request.sender.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[9px] uppercase">{request.sender.username.slice(0, 1)}</span>}</span><div className="min-w-0 flex-1"><Link href={"/profile/" + request.sender.username} className="text-xs hover:text-muted">@{request.sender.username}</Link><div className="mt-3 flex gap-2"><button onClick={() => respond(request,true)} className="bg-fg px-3 py-2 text-[9px] uppercase tracking-[0.1em] text-bg">Accept</button><button onClick={() => respond(request,false)} className="border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em]">Decline</button></div></div>)}</div>}
+          {requests.length === 0 ? (
+            <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No pending requests.</p>
+          ) : (
+            <div>
+              {requests.map((request) => request.sender && (
+                <div key={request.id} className="flex items-center gap-3 border-b border-line py-4">
+                  <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line">
+                    {request.sender.avatar_url ? (
+                      <img src={request.sender.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-[9px] uppercase">{request.sender.username.slice(0, 1)}</span>
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <Link href={"/profile/" + request.sender.username} className="text-xs hover:text-muted">
+                      @{request.sender.username}
+                    </Link>
+                    <div className="mt-3 flex gap-2">
+                      <button onClick={() => respond(request, true)} className="bg-fg px-3 py-2 text-[9px] uppercase tracking-[0.1em] text-bg">Accept</button>
+                      <button onClick={() => respond(request, false)} className="border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em]">Decline</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Sent requests {sentRequests.length > 0 && "/" + sentRequests.length}</div>
           {sentRequests.length === 0 ? (
