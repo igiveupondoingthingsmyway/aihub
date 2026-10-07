@@ -5,9 +5,17 @@ import { useEffect, useState } from "react";
 import { Bell, Menu, MessageSquare, Orbit, UserRound, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-type Notification = {
+type FriendNotification = {
   id: string;
   sender_id: string;
+  created_at: string;
+  sender?: { username: string; avatar_url: string };
+};
+
+type MessageNotification = {
+  id: string;
+  sender_id: string;
+  message_id: string;
   created_at: string;
   sender?: { username: string; avatar_url: string };
 };
@@ -21,36 +29,61 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [friendNotifications, setFriendNotifications] = useState<FriendNotification[]>([]);
+  const [messageNotifications, setMessageNotifications] = useState<MessageNotification[]>([]);
+  const notificationCount = friendNotifications.length + messageNotifications.length;
 
   useEffect(() => {
     const supabase = createClient();
     let channel: any = null;
 
     async function loadNotifications(userId: string) {
-      const { data: rows } = await supabase
+      const { data: friendRows } = await supabase
         .from("friend_requests")
         .select("id,sender_id,created_at")
         .eq("receiver_id", userId)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
-      if (!rows?.length) {
-        setNotifications([]);
-        return;
+      if (!friendRows?.length) {
+        setFriendNotifications([]);
+      } else {
+        const { data: senders } = await supabase
+          .from("profiles")
+          .select("id,username,avatar_url")
+          .in("id", friendRows.map((row) => row.sender_id));
+
+        setFriendNotifications(
+          friendRows.map((row) => ({
+            ...row,
+            sender: senders?.find((profile) => profile.id === row.sender_id),
+          }))
+        );
       }
 
-      const { data: senders } = await supabase
-        .from("profiles")
-        .select("id,username,avatar_url")
-        .in("id", rows.map((row) => row.sender_id));
+      const { data: messageRows } = await supabase
+        .from("notifications")
+        .select("id,sender_id,message_id,created_at")
+        .eq("user_id", userId)
+        .is("read_at", null)
+        .order("created_at", { ascending: false })
+        .limit(12);
 
-      setNotifications(
-        rows.map((row) => ({
-          ...row,
-          sender: senders?.find((profile) => profile.id === row.sender_id),
-        }))
-      );
+      if (!messageRows?.length) {
+        setMessageNotifications([]);
+      } else {
+        const { data: senders } = await supabase
+          .from("profiles")
+          .select("id,username,avatar_url")
+          .in("id", messageRows.map((row) => row.sender_id));
+
+        setMessageNotifications(
+          messageRows.map((row) => ({
+            ...row,
+            sender: senders?.find((profile) => profile.id === row.sender_id),
+          }))
+        );
+      }
     }
 
     async function load() {
@@ -84,7 +117,7 @@ export function Navbar() {
       if (session?.user) {
         loadNotifications(session.user.id);
       } else {
-        setNotifications([]);
+        setFriendNotifications([]); setMessageNotifications([]);
       }
     });
 
@@ -128,9 +161,9 @@ export function Navbar() {
                   className="relative flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-fg"
                 >
                   <Bell size={15} strokeWidth={1.25} />
-                  {notifications.length > 0 && (
+                  {notificationCount > 0 && (
                     <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-fg px-1 text-[7px] font-medium text-bg">
-                      {notifications.length > 9 ? "9+" : notifications.length}
+                      {notificationCount > 9 ? "9+" : notificationCount}
                     </span>
                   )}
                 </button>
@@ -142,30 +175,26 @@ export function Navbar() {
                         Notifications
                       </span>
                       <span className="text-[9px] uppercase tracking-[0.1em] text-muted">
-                        {notifications.length}
+                        {notificationCount}
                       </span>
                     </div>
 
-                    {notifications.length === 0 ? (
+                    {notificationCount === 0 ? (
                       <div className="px-4 py-8 text-center text-[9px] uppercase tracking-[0.1em] text-muted">
                         Nothing new.
                       </div>
                     ) : (
                       <div>
-                        {notifications.slice(0, 6).map((notification) => (
+                        {friendNotifications.slice(0, 4).map((notification) => (
                           <Link
-                            key={notification.id}
+                            key={"friend-" + notification.id}
                             href={"/profile/" + notification.sender?.username}
                             onClick={() => setNotificationOpen(false)}
                             className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg"
                           >
                             <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">
                               {notification.sender?.avatar_url ? (
-                                <img
-                                  src={notification.sender.avatar_url}
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                />
+                                <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" />
                               ) : (
                                 <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">
                                   {notification.sender?.username?.slice(0, 1) || "?"}
@@ -173,12 +202,34 @@ export function Navbar() {
                               )}
                             </span>
                             <div className="min-w-0">
-                              <p className="text-[10px] uppercase tracking-[0.06em]">
-                                @{notification.sender?.username || "user"}
-                              </p>
-                              <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted group-hover:text-bg">
-                                Sent you a friend request
-                              </p>
+                              <p className="text-[10px] uppercase tracking-[0.06em]">@{notification.sender?.username || "user"}</p>
+                              <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">Sent you a friend request</p>
+                            </div>
+                          </Link>
+                        ))}
+                        {messageNotifications.slice(0, 6).map((notification) => (
+                          <Link
+                            key={"message-" + notification.id}
+                            href={"/messages/" + notification.sender?.username}
+                            onClick={async () => {
+                              setNotificationOpen(false);
+                              await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+                              setMessageNotifications((items) => items.filter((item) => item.id !== notification.id));
+                            }}
+                            className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg"
+                          >
+                            <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">
+                              {notification.sender?.avatar_url ? (
+                                <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">
+                                  {notification.sender?.username?.slice(0, 1) || "?"}
+                                </span>
+                              )}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-[10px] uppercase tracking-[0.06em]">@{notification.sender?.username || "user"}</p>
+                              <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">Sent you a message</p>
                             </div>
                           </Link>
                         ))}
@@ -256,9 +307,9 @@ export function Navbar() {
               >
                 <Bell size={13} />
                 Notifications
-                {notifications.length > 0 && (
+                {notificationCount > 0 && (
                   <span className="flex h-4 min-w-4 items-center justify-center rounded-full border border-fg px-1 text-[8px]">
-                    {notifications.length}
+                    {notificationCount}
                   </span>
                 )}
               </Link>
