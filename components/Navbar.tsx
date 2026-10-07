@@ -107,6 +107,16 @@ export function Navbar() {
           },
           () => loadNotifications(user.id)
         )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: "user_id=eq." + user.id,
+          },
+          () => loadNotifications(user.id)
+        )
         .subscribe();
     }
 
