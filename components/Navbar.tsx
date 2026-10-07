@@ -14,8 +14,10 @@ type FriendNotification = {
 
 type MessageNotification = {
   id: string;
+  type: "message" | "friend_accepted";
   sender_id: string;
-  message_id: string;
+  message_id: string | null;
+  friend_request_id: string | null;
   created_at: string;
   sender?: { username: string; avatar_url: string };
 };
@@ -61,24 +63,24 @@ export function Navbar() {
         );
       }
 
-      const { data: messageRows } = await supabase
+      const { data: notificationRows } = await supabase
         .from("notifications")
-        .select("id,sender_id,message_id,created_at")
+        .select("id,type,sender_id,message_id,friend_request_id,created_at")
         .eq("user_id", userId)
         .is("read_at", null)
         .order("created_at", { ascending: false })
         .limit(12);
 
-      if (!messageRows?.length) {
+      if (!notificationRows?.length) {
         setMessageNotifications([]);
       } else {
         const { data: senders } = await supabase
           .from("profiles")
           .select("id,username,avatar_url")
-          .in("id", messageRows.map((row) => row.sender_id));
+          .in("id", notificationRows.map((row) => row.sender_id));
 
         setMessageNotifications(
-          messageRows.map((row) => ({
+          notificationRows.map((row) => ({
             ...row,
             sender: senders?.find((profile) => profile.id === row.sender_id),
           }))
@@ -134,7 +136,8 @@ export function Navbar() {
       if (session?.user) {
         loadNotifications(session.user.id);
       } else {
-        setFriendNotifications([]); setMessageNotifications([]);
+        setFriendNotifications([]);
+        setMessageNotifications([]);
       }
     });
 
@@ -225,32 +228,45 @@ export function Navbar() {
                             </div>
                           </Link>
                         ))}
-                        {messageNotifications.slice(0, 6).map((notification) => (
-                          <Link
-                            key={"message-" + notification.id}
-                            href={"/messages/" + notification.sender?.username}
-                            onClick={async () => {
-                              setNotificationOpen(false);
-                              await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
-                              setMessageNotifications((items) => items.filter((item) => item.id !== notification.id));
-                            }}
-                            className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg"
-                          >
-                            <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">
-                              {notification.sender?.avatar_url ? (
-                                <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" />
-                              ) : (
-                                <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">
-                                  {notification.sender?.username?.slice(0, 1) || "?"}
-                                </span>
-                              )}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-[10px] uppercase tracking-[0.06em]">@{notification.sender?.username || "user"}</p>
-                              <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">Sent you a message</p>
-                            </div>
-                          </Link>
-                        ))}
+
+                        {messageNotifications.slice(0, 6).map((notification) => {
+                          const isAccepted = notification.type === "friend_accepted";
+                          const username = notification.sender?.username || "user";
+
+                          return (
+                            <Link
+                              key={"notification-" + notification.id}
+                              href={isAccepted ? "/profile/" + username : "/messages/" + username}
+                              onClick={async () => {
+                                setNotificationOpen(false);
+                                await createClient()
+                                  .from("notifications")
+                                  .update({ read_at: new Date().toISOString() })
+                                  .eq("id", notification.id);
+                                setMessageNotifications((items) =>
+                                  items.filter((item) => item.id !== notification.id)
+                                );
+                              }}
+                              className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg"
+                            >
+                              <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">
+                                {notification.sender?.avatar_url ? (
+                                  <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">
+                                    {username.slice(0, 1)}
+                                  </span>
+                                )}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-[10px] uppercase tracking-[0.06em]">@{username}</p>
+                                <p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">
+                                  {isAccepted ? "Accepted your friend request" : "Sent you a message"}
+                                </p>
+                              </div>
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
 
