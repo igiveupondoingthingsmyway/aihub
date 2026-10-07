@@ -33,7 +33,7 @@ export default function SignupPage() {
     setMessage("");
 
     try {
-      const { error } = await createClient().auth.signUp({
+      const { data, error } = await createClient().auth.signUp({
         email,
         password,
         options: {
