@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, MessageCircle, Users } from "lucide-react";
-import { Directory } from "@/components/Directory";
 
 export default function Home() {
   return (
@@ -27,7 +26,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="mt-16 grid border-y border-line sm:grid-cols-3">
+        <div className="mt-16 grid border-y border-line sm:grid-cols-2">
           <div className="flex items-center gap-4 border-b border-line py-5 sm:border-b-0 sm:border-r sm:pr-6">
             <Users size={17} strokeWidth={1.25} />
             <div>
@@ -35,7 +34,7 @@ export default function Home() {
               <p className="mt-1 text-2xl tracking-[-0.05em]">0 / 30</p>
             </div>
           </div>
-          <Link href="/messages" className="group flex items-center gap-4 border-b border-line py-5 sm:border-b-0 sm:px-6 sm:border-r">
+          <Link href="/messages" className="group flex items-center gap-4 py-5 sm:px-6">
             <MessageCircle size={17} strokeWidth={1.25} />
             <div>
               <p className="text-[9px] uppercase tracking-[0.15em] text-muted">Social</p>
@@ -43,16 +42,8 @@ export default function Home() {
             </div>
             <ArrowRight size={13} className="ml-auto transition-transform group-hover:translate-x-1" />
           </Link>
-          <div className="flex items-center gap-4 py-5 sm:pl-6">
-            <span className="h-2 w-2 rounded-full bg-fg" />
-            <div>
-              <p className="text-[9px] uppercase tracking-[0.15em] text-muted">AI directory</p>
-              <p className="mt-1 text-sm uppercase tracking-[0.05em]">Tools worth knowing</p>
-            </div>
-          </div>
         </div>
       </section>
-      <Directory />
     </main>
   );
 }
