@@ -61,9 +61,11 @@ export default function MessagesPage() {
     if (!accept) {
       await supabase.from("friend_requests").update({ status: "declined" }).eq("id", request.id);
     } else {
-      await supabase.from("friend_requests").update({ status: "accepted" }).eq("id", request.id);
       const { error } = await supabase.rpc("accept_friend_request", { request_id: request.id });
-      if (error) setNotice(error.message);
+      if (error) {
+        setNotice(error.message);
+        return;
+      }
     }
     setRequests((items) => items.filter((item) => item.id !== request.id));
     if (accept && request.sender) setFriends((items) => items.some(x => x.id === request.sender!.id) ? items : [...items, request.sender!]);
