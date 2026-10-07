@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, MessageSquare, Search, UserPlus } from "lucide-react";
+import { ArrowRight, MessageCircle, Search, UserPlus, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
@@ -76,6 +76,18 @@ export default function MessagesPage() {
     setNotice("Request sent to @" + profile.username + ".");
   }
 
+  async function openChat(profile: Profile) {
+    if (!user) return;
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
+    if (error || !data) {
+      setNotice(error?.message || "Could not open conversation.");
+      return;
+    }
+    setConversations((items) => items.some((item) => item.id === data) ? items : [{ id: data, user_one: user.id, user_two: profile.id, other: profile }, ...items]);
+    window.location.href = "/messages/" + profile.username;
+  }
+
   async function respond(request: Request, accept: boolean) {
     if (!user) return;
     const supabase = createClient();
@@ -96,39 +108,64 @@ export default function MessagesPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-      <div className="border-y border-line py-3 text-[10px] uppercase tracking-[0.18em] text-muted">Social / Messages</div>
+      <div className="flex items-center justify-between border-y border-line py-3 text-[10px] uppercase tracking-[0.18em] text-muted">
+        <span>Social / Network</span>
+        <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-fg" />0 / 30 online</span>
+      </div>
+
       <div className="mt-12 grid gap-16 lg:grid-cols-[1fr_360px]">
         <section>
-          <div className="flex items-end justify-between border-b border-line pb-3">
-            <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">MESSAGES.</h1><MessageSquare size={20} strokeWidth={1.25}/>
+          <div className="flex items-end justify-between border-b border-line pb-4">
+            <div>
+              <p className="mb-3 text-[9px] uppercase tracking-[0.18em] text-muted">Your network</p>
+              <h1 className="text-5xl tracking-[-0.06em] sm:text-7xl">PEOPLE.</h1>
+            </div>
+            <Users size={22} strokeWidth={1.15} />
           </div>
+
           <div className="border-b border-line">
             {conversations.length === 0 ? (
-              <div className="flex min-h-64 items-center justify-center text-center">
-                <div><MessageSquare className="mx-auto" size={28} strokeWidth={1.25}/><p className="mt-5 text-xs uppercase tracking-[0.12em]">No conversations yet.</p><p className="mt-2 text-[10px] text-muted">Open a friend to start chatting.</p></div>
+              <div className="flex min-h-72 items-center justify-center text-center">
+                <div>
+                  <MessageCircle className="mx-auto" size={30} strokeWidth={1.1}/>
+                  <p className="mt-5 text-xs uppercase tracking-[0.14em]">No conversations yet.</p>
+                  <p className="mt-2 max-w-xs text-[10px] leading-5 text-muted">Find someone on the right and start the first conversation.</p>
+                </div>
               </div>
             ) : (
-              <div>{conversations.map(conversation => conversation.other && (
-                <Link key={conversation.id} href={"/messages/" + conversation.other.username} className="flex items-center gap-4 border-b border-line py-5 hover:text-muted">
-                  <span className="h-2 w-2 rounded-full bg-fg"/>
-                  <div><p className="text-xs">@{conversation.other.username}</p><p className="mt-1 text-[10px] text-muted">Open conversation</p></div>
-                  <ArrowRight className="ml-auto" size={14}/>
-                </Link>
-              ))}</div>
+              <div>
+                {conversations.map(conversation => conversation.other && (
+                  <Link key={conversation.id} href={"/messages/" + conversation.other.username} className="group flex items-center gap-4 border-b border-line py-5 transition-colors hover:text-muted">
+                    <span className="h-2 w-2 rounded-full bg-fg"/>
+                    <div>
+                      <p className="text-xs">@{conversation.other.username}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-muted">Conversation</p>
+                    </div>
+                    <ArrowRight className="ml-auto transition-transform group-hover:translate-x-1" size={14}/>
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </section>
+
         <aside>
           <div className="border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Find people</div>
-          <div className="relative mt-6"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={15}/><input value={query} onChange={(e) => searchPeople(e.target.value)} placeholder="SEARCH USERNAME" className="h-11 w-full border border-line bg-transparent pl-9 pr-3 text-xs uppercase tracking-[0.08em] focus:border-fg focus:outline-none"/></div>
-          {people.length > 0 && <div className="mt-2 border border-line">{people.map(person => <div key={person.id} className="flex items-center justify-between border-b border-line px-3 py-3 last:border-0"><div><p className="text-xs">@{person.username}</p><p className="mt-1 text-[10px] text-muted">{person.bio || "AI Hub member"}</p></div><button onClick={() => addFriend(person)} className="flex items-center gap-2 border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em] hover:bg-fg hover:text-bg"><UserPlus size={12}/>Add</button></div>)}</div>}
+          <div className="relative mt-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={15}/>
+            <input value={query} onChange={(e) => searchPeople(e.target.value)} placeholder="SEARCH USERNAME" className="h-11 w-full border border-line bg-transparent pl-9 pr-3 text-xs uppercase tracking-[0.08em] focus:border-fg focus:outline-none"/>
+          </div>
+          {people.length > 0 && <div className="mt-2 border border-line">{people.map(person => <div key={person.id} className="flex items-center justify-between border-b border-line px-3 py-3 last:border-0"><div><p className="text-xs">@{person.username}</p><p className="mt-1 text-[10px] text-muted">{person.bio || "AI Hub member"}</p></div><button onClick={() => openChat(person)} className="flex items-center gap-2 border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em] hover:bg-fg hover:text-bg"><MessageCircle size={12}/>Chat</button></div>)}</div>}
           {notice && <p className="mt-4 text-[10px] uppercase tracking-[0.08em] text-muted">{notice}</p>}
+
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friend requests {requests.length > 0 && "/" + requests.length}</div>
           {requests.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No pending requests.</p> : <div>{requests.map(request => request.sender && <div key={request.id} className="border-b border-line py-4"><p className="text-xs">@{request.sender.username}</p><div className="mt-3 flex gap-2"><button onClick={() => respond(request,true)} className="bg-fg px-3 py-2 text-[9px] uppercase tracking-[0.1em] text-bg">Accept</button><button onClick={() => respond(request,false)} className="border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em]">Decline</button></div></div>)}</div>}
+
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Sent requests {sentRequests.length > 0 && "/" + sentRequests.length}</div>
           {sentRequests.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No active requests sent.</p> : <div>{sentRequests.map(request => request.receiver && <div key={request.id} className="flex items-center justify-between border-b border-line py-4"><div><p className="text-xs">@{request.receiver.username}</p><p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-muted">Pending</p></div></div>)}</div>}
+
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friends / {friends.length}</div>
-          {friends.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No friends yet.</p> : <div>{friends.map(friend => <Link key={friend.id} href={"/messages/" + friend.username} className="flex items-center gap-3 border-b border-line py-4 hover:text-muted"><span className="h-2 w-2 rounded-full bg-fg"/><span className="text-xs">@{friend.username}</span><ArrowRight className="ml-auto" size={13}/></Link>)}</div>}
+          {friends.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No friends yet.</p> : <div>{friends.map(friend => <button key={friend.id} onClick={() => openChat(friend)} className="flex w-full items-center gap-3 border-b border-line py-4 text-left hover:text-muted"><span className="h-2 w-2 rounded-full bg-fg"/><span className="text-xs">@{friend.username}</span><ArrowRight className="ml-auto" size={13}/></button>)}</div>}
         </aside>
       </div>
     </main>
