@@ -11,8 +11,8 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "AI Hub: GO IN. GO TIME.", template: "%s | AI Hub" },
-  description: "AI Hub is a directory for discovering AI tools across chat, image, video, coding, writing, research, audio and productivity.",
+  title: { default: "SHB: GO IN. GO TIME.", template: "%s | SHB" },
+  description: "SHB is a social hub for discovering people, conversations and useful AI tools.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <footer className="border-t border-line">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-10 text-[11px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:justify-between sm:px-8">
-            <span>AI Hub / 2026</span>
+            <span>SHB / 2026</span>
             <span>Pricing data may change. Check official sites.</span>
           </div>
         </footer>
