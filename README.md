@@ -1,4 +1,4 @@
-# AI Hub
+# SHB
 Next.js + TypeScript + Tailwind + Lucide. Mock data only.
 
     npm install
