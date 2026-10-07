@@ -15,9 +15,6 @@ export default function Home() {
               <span className="hero-word">GO IN</span><br />
               <span className="hero-word text-muted">GO TIME</span>
             </h1>
-            <p className="mt-9 max-w-xl text-sm leading-7 text-muted sm:text-base">
-              Find people. Talk. Share what you use. Discover AI together.
-            </p>
           </div>
           <Link href="/messages" className="group flex w-fit items-center gap-3 border border-line px-5 py-4 text-[10px] uppercase tracking-[0.15em] transition-colors hover:bg-fg hover:text-bg">
             <MessageCircle size={14} strokeWidth={1.25} />
