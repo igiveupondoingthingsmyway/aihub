@@ -32,18 +32,24 @@ export default function MessagesPage() {
       if (ids.length) {
         const { data } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", ids);
         setFriends(data ?? []);
+      } else {
+        setFriends([]);
       }
 
       const { data: requestRows } = await supabase.from("friend_requests").select("id,sender_id,receiver_id,status").eq("receiver_id", user.id).eq("status", "pending");
       if (requestRows?.length) {
         const { data: senders } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", requestRows.map(r => r.sender_id));
         setRequests(requestRows.map(r => ({ ...r, sender: senders?.find(p => p.id === r.sender_id) })));
+      } else {
+        setRequests([]);
       }
 
       const { data: sentRows } = await supabase.from("friend_requests").select("id,sender_id,receiver_id,status").eq("sender_id", user.id).eq("status", "pending");
       if (sentRows?.length) {
         const { data: receivers } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", sentRows.map(r => r.receiver_id));
         setSentRequests(sentRows.map(r => ({ ...r, receiver: receivers?.find(p => p.id === r.receiver_id) })));
+      } else {
+        setSentRequests([]);
       }
 
       const { data: conversationRows } = await supabase.from("conversations").select("id,user_one,user_two").or("user_one.eq." + user.id + ",user_two.eq." + user.id).order("created_at", { ascending: false });
@@ -51,6 +57,8 @@ export default function MessagesPage() {
         const otherIds = conversationRows.map(c => c.user_one === user.id ? c.user_two : c.user_one);
         const { data: profiles } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", otherIds);
         setConversations(conversationRows.map(c => ({ ...c, other: profiles?.find(p => p.id === (c.user_one === user.id ? c.user_two : c.user_one)) })));
+      } else {
+        setConversations([]);
       }
       setLoading(false);
     }
@@ -79,30 +87,25 @@ export default function MessagesPage() {
     }
 
     const supabase = createClient();
-    const { data: existing } = await supabase.from("friend_requests")
-      .select("id,sender_id,receiver_id,status")
-      .or("and(sender_id.eq." + user.id + ",receiver_id.eq." + profile.id + "),and(sender_id.eq." + profile.id + ",receiver_id.eq." + user.id + ")")
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("send_friend_request", {
+      receiver_user: profile.id,
+    });
 
-    if (existing?.status === "pending") {
-      setNotice(existing.sender_id === user.id ? "Friend request already sent." : "@" + profile.username + " already sent you a request.");
-      return;
-    }
-
-    if (existing?.status === "declined" && existing.sender_id === user.id) {
-      const { error } = await supabase.from("friend_requests").update({ status: "pending" }).eq("id", existing.id).eq("sender_id", user.id);
-      if (error) { setNotice(error.message); return; }
-      setSentRequests((items) => [...items, { id: existing.id, sender_id: user.id, receiver_id: profile.id, status: "pending", receiver: profile }]);
-      setNotice("Request sent to @" + profile.username + ".");
-      return;
-    }
-
-    const { data, error } = await supabase.from("friend_requests").insert({ sender_id: user.id, receiver_id: profile.id }).select("id,sender_id,receiver_id,status").single();
     if (error) {
       setNotice(error.message);
       return;
     }
-    setSentRequests((items) => [...items, { ...data, receiver: profile }]);
+
+    if (!data) {
+      setNotice("Unable to send friend request.");
+      return;
+    }
+
+    const request = Array.isArray(data) ? data[0] : data;
+    setSentRequests((items) => [
+      ...items.filter((item) => item.id !== request.id),
+      { ...request, receiver: profile },
+    ]);
     setNotice("Request sent to @" + profile.username + ".");
   }
 
