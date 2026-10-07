@@ -2,23 +2,27 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LogOut, Save, UserRound } from "lucide-react";
+import { ImagePlus, LogOut, Save, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
   username: string;
   bio: string;
   avatar_url: string;
+  banner_url: string;
   online: boolean;
 };
 
-const emptyProfile: Profile = { username: "", bio: "", avatar_url: "", online: true };
+const emptyProfile: Profile = { username: "", bio: "", avatar_url: "", banner_url: "", online: true };
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [profile, setProfile] = useState<Profile>(emptyProfile);
+  const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -28,12 +32,21 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = "/login"; return; }
 
+      setUserId(user.id);
       setEmail(user.email ?? "");
+
+      const { data: dbProfile } = await supabase
+        .from("profiles")
+        .select("username,bio,avatar_url,banner_url")
+        .eq("id", user.id)
+        .maybeSingle();
+
       const metadata = user.user_metadata ?? {};
       setProfile({
-        username: metadata.username ?? "",
-        bio: metadata.bio ?? "",
-        avatar_url: metadata.avatar_url ?? "",
+        username: dbProfile?.username ?? metadata.username ?? "",
+        bio: dbProfile?.bio ?? metadata.bio ?? "",
+        avatar_url: dbProfile?.avatar_url ?? metadata.avatar_url ?? "",
+        banner_url: dbProfile?.banner_url ?? metadata.banner_url ?? "",
         online: true,
       });
       setLoading(false);
@@ -42,21 +55,67 @@ export default function ProfilePage() {
     load();
   }, []);
 
+  async function uploadMedia(type: "avatar" | "banner", file: File) {
+    if (!userId) return;
+    if (!file.type.startsWith("image/")) {
+      setMessage("Please choose an image file.");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setMessage("Image must be 5 MB or smaller.");
+      return;
+    }
+
+    setUploading(type);
+    setMessage("");
+    const supabase = createClient();
+    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = userId + "/" + type + "-" + Date.now() + "." + extension;
+
+    const { error: uploadError } = await supabase.storage
+      .from("profile-media")
+      .upload(path, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) {
+      setMessage(uploadError.message);
+      setUploading(null);
+      return;
+    }
+
+    const { data } = supabase.storage.from("profile-media").getPublicUrl(path);
+    const url = data.publicUrl;
+
+    setProfile((current) => ({ ...current, [type === "avatar" ? "avatar_url" : "banner_url"]: url }));
+    setMessage(type === "avatar" ? "Avatar uploaded." : "Banner uploaded.");
+    setUploading(null);
+  }
+
   async function saveProfile() {
     setSaving(true);
     setMessage("");
     const supabase = createClient();
+    const username = profile.username.trim().toLowerCase();
+    const bio = profile.bio.trim();
 
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        username: profile.username.trim(),
-        bio: profile.bio.trim(),
-        avatar_url: profile.avatar_url.trim(),
-      },
+    const { error: profileError } = await supabase.from("profiles").upsert({
+      id: userId,
+      username,
+      bio,
+      avatar_url: profile.avatar_url,
+      banner_url: profile.banner_url,
     });
 
-    if (error) setMessage(error.message);
-    else setMessage("Profile saved.");
+    if (profileError) {
+      setMessage(profileError.message);
+      setSaving(false);
+      return;
+    }
+
+    const { error: authError } = await supabase.auth.updateUser({
+      data: { username, bio, avatar_url: profile.avatar_url, banner_url: profile.banner_url },
+    });
+
+    setMessage(authError ? authError.message : "Profile saved.");
     setSaving(false);
   }
 
@@ -71,20 +130,33 @@ export default function ProfilePage() {
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <div className="border-y border-line py-3 text-[10px] uppercase tracking-[0.18em] text-muted">Account / Profile</div>
 
-      <div className="mt-12 flex flex-col justify-between gap-10 border-b border-line pb-12 sm:flex-row sm:items-end">
-        <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden border border-line">
-            {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound size={28} strokeWidth={1.25} />}
+      <div className="mt-12 overflow-hidden border border-line">
+        <div className="relative h-48 bg-white/[0.02] sm:h-64">
+          {profile.banner_url && <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />}
+          <label className="absolute right-4 top-4 flex cursor-pointer items-center gap-2 border border-line bg-bg/90 px-3 py-2 text-[9px] uppercase tracking-[0.1em] backdrop-blur-sm hover:bg-fg hover:text-bg">
+            <ImagePlus size={13} />
+            {uploading === "banner" ? "Uploading..." : "Banner"}
+            <input type="file" accept="image/*" className="hidden" disabled={!!uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadMedia("banner", file); e.currentTarget.value = ""; }} />
+          </label>
+        </div>
+
+        <div className="flex flex-col gap-6 px-5 pb-8 sm:flex-row sm:items-end sm:px-8">
+          <div className="-mt-14">
+            <label className="relative block h-28 w-28 cursor-pointer overflow-hidden border border-line bg-bg">
+              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center"><UserRound size={32} strokeWidth={1.1} /></div>}
+              <span className="absolute inset-x-0 bottom-0 bg-bg/90 py-2 text-center text-[8px] uppercase tracking-[0.1em]">Change</span>
+              <input type="file" accept="image/*" className="hidden" disabled={!!uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadMedia("avatar", file); e.currentTarget.value = ""; }} />
+            </label>
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em]">
               <span className="h-2 w-2 rounded-full bg-fg" /> Online
             </div>
-            <h1 className="mt-3 text-4xl tracking-[-0.05em] sm:text-6xl">{profile.username || "YOUR PROFILE."}</h1>
+            <h1 className="mt-3 text-4xl tracking-[-0.05em] sm:text-6xl">{profile.username || "YOUR PROFILE"}</h1>
             <p className="mt-2 text-sm text-muted">{email}</p>
           </div>
+          <button onClick={logout} className="flex w-fit items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><LogOut size={14} /> Log out</button>
         </div>
-        <button onClick={logout} className="flex w-fit items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><LogOut size={14} /> Log out</button>
       </div>
 
       <section className="mt-12 max-w-2xl">
@@ -93,11 +165,6 @@ export default function ProfilePage() {
           <label className="block">
             <span className="mb-2 block text-[10px] uppercase tracking-[0.12em] text-muted">Username</span>
             <input maxLength={24} value={profile.username} onChange={(e) => setProfile({ ...profile, username: e.target.value.replace(/\s/g, "").slice(0, 24) })} placeholder="yourusername" className="h-12 w-full border border-line bg-transparent px-4 text-sm focus:border-fg focus:outline-none" />
-          </label>
-          <label className="block">
-            <span className="mb-2 block text-[10px] uppercase tracking-[0.12em] text-muted">Avatar URL</span>
-            <input type="url" value={profile.avatar_url} onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })} placeholder="https://..." className="h-12 w-full border border-line bg-transparent px-4 text-sm focus:border-fg focus:outline-none" />
-            <span className="mt-2 block text-[10px] text-muted">Paste a direct image link. File uploads come next with Supabase Storage.</span>
           </label>
           <label className="block">
             <span className="mb-2 block text-[10px] uppercase tracking-[0.12em] text-muted">Bio</span>
@@ -109,12 +176,12 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em]"><span className="h-2 w-2 rounded-full bg-fg" /> Online</div>
           </div>
           {message && <p className="text-xs text-muted">{message}</p>}
-          <button onClick={saveProfile} disabled={saving} className="flex h-12 items-center gap-3 bg-fg px-5 text-[11px] uppercase tracking-[0.12em] text-bg disabled:opacity-50"><Save size={14} /> {saving ? "Saving..." : "Save profile"}</button>
+          <button onClick={saveProfile} disabled={saving || !!uploading} className="flex h-12 items-center gap-3 bg-fg px-5 text-[11px] uppercase tracking-[0.12em] text-bg disabled:opacity-50"><Save size={14} /> {saving ? "Saving..." : "Save profile"}</button>
         </div>
       </section>
 
       <section className="mt-16 border-t border-line pt-8">
-        <div className="flex items-baseline justify-between border-b border-line pb-3"><h2 className="text-xs uppercase tracking-[0.16em]">Saved tools</h2><Link href="/#tools" className="text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg">Browse tools →</Link></div>
+        <div className="flex items-baseline justify-between border-b border-line pb-3"><h2 className="text-xs uppercase tracking-[0.16em]">Saved tools</h2><Link href="/ai-tools" className="text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg">Browse tools →</Link></div>
         <div className="py-14 text-xs text-muted">Your saved AI tools will appear here.</div>
       </section>
     </main>
