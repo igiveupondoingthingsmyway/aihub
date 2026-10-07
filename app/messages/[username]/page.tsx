@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Send, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { params: Promise<{ username: string }> };
@@ -85,6 +85,9 @@ export default function ChatPage({ params }: Props) {
           </span>
           <span className="text-xs">@{username}</span>
         </div>
+          <Link href={"/profile/" + username} aria-label={"Open @" + username + " profile"} className="ml-3 text-muted hover:text-fg"><UserRound size={15} strokeWidth={1.4}/></Link>
+          <button type="button" aria-label="Chat options" className="ml-1 text-muted hover:text-fg"><MoreHorizontal size={17} strokeWidth={1.4}/></button>
+        </div>
       </div>
 
       <div className="mt-6 min-h-[55vh] border-b border-line">
@@ -97,7 +100,10 @@ export default function ChatPage({ params }: Props) {
             {messages.map((message) => (
               <div key={message.id} className={"flex " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                 <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
-                  {message.content}
+                  <div>{message.content}</div>
+                  <div className={"mt-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
+                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
                 </div>
               </div>
             ))}
