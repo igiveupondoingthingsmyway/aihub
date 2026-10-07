@@ -32,11 +32,11 @@ export default function ChatPage({ params }: Props) {
       if (!user) { window.location.href = "/login"; return; }
       setMe(user.id);
 
-      const { data: profile } = await supabase.from("profiles").select("id,username").eq("username", target).maybeSingle();
+      const { data: profile } = await supabase.from("profiles").select("id,username,avatar_url").eq("username", target).maybeSingle();
       if (!profile) { setError("User not found."); setLoading(false); return; }
       setOtherId(profile.id);
 
-      const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: targetProfile.id });
+      const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
       if (rpcError || !conversation) { setError(rpcError?.message ?? "Unable to open conversation."); setLoading(false); return; }
       setConversationId(conversation);
 
