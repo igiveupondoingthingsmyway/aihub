@@ -105,7 +105,7 @@ export default function ProfilePage() {
             <span className="mt-2 block text-right text-[10px] text-muted">{profile.bio.length}/160</span>
           </label>
           <div className="flex items-center justify-between border-y border-line py-4">
-            <div><p className="text-[10px] uppercase tracking-[0.12em]">Network status</p><p className="mt-1 text-xs text-muted">Shown while you are active in AI Hub.</p></div>
+            <div><p className="text-[10px] uppercase tracking-[0.12em]">Network status</p><p className="mt-1 text-xs text-muted">Shown while you are active in SHB.</p></div>
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em]"><span className="h-2 w-2 rounded-full bg-fg" /> Online</div>
           </div>
           {message && <p className="text-xs text-muted">{message}</p>}
