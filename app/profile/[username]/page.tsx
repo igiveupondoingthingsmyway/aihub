@@ -136,7 +136,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <Link href="/messages" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted hover:text-fg"><ArrowLeft size={13}/> Back to network</Link>
 
-      <section className="mt-16 overflow-hidden border border-line sm:mt-20">
+      <section className="mt-6 overflow-hidden border border-line sm:mt-8">
         <div className="relative h-40 bg-white/[0.02] sm:h-52 lg:h-60">
           {profile.banner_url && <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />}
         </div>
