@@ -40,6 +40,8 @@ export default function ChatPage({ params }: Props) {
       if (rpcError || !conversation) { setError(rpcError?.message ?? "Unable to open conversation."); setLoading(false); return; }
       setConversationId(conversation);
 
+      await supabase.rpc("mark_conversation_notifications_read", { target_conversation: conversation });
+
       const { data } = await supabase.from("messages").select("id,sender_id,content,created_at").eq("conversation_id", conversation).order("created_at", { ascending: true });
       setMessages(data ?? []);
 
