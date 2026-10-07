@@ -6,12 +6,15 @@ import { ArrowRight, MessageSquare, Search, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
-type Request = { id: string; sender_id: string; status: string; sender?: Profile };
+type Request = { id: string; sender_id: string; receiver_id?: string; status: string; sender?: Profile; receiver?: Profile };
+type Conversation = { id: string; user_one: string; user_two: string; other?: Profile };
 
 export default function MessagesPage() {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [friends, setFriends] = useState<Profile[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [sentRequests, setSentRequests] = useState<Request[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [query, setQuery] = useState("");
   const [people, setPeople] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,10 +34,23 @@ export default function MessagesPage() {
         setFriends(data ?? []);
       }
 
-      const { data: requestRows } = await supabase.from("friend_requests").select("id,sender_id,status").eq("receiver_id", user.id).eq("status", "pending");
+      const { data: requestRows } = await supabase.from("friend_requests").select("id,sender_id,receiver_id,status").eq("receiver_id", user.id).eq("status", "pending");
       if (requestRows?.length) {
         const { data: senders } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", requestRows.map(r => r.sender_id));
         setRequests(requestRows.map(r => ({ ...r, sender: senders?.find(p => p.id === r.sender_id) })));
+      }
+
+      const { data: sentRows } = await supabase.from("friend_requests").select("id,sender_id,receiver_id,status").eq("sender_id", user.id).eq("status", "pending");
+      if (sentRows?.length) {
+        const { data: receivers } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", sentRows.map(r => r.receiver_id));
+        setSentRequests(sentRows.map(r => ({ ...r, receiver: receivers?.find(p => p.id === r.receiver_id) })));
+      }
+
+      const { data: conversationRows } = await supabase.from("conversations").select("id,user_one,user_two").or("user_one.eq." + user.id + ",user_two.eq." + user.id).order("created_at", { ascending: false });
+      if (conversationRows?.length) {
+        const otherIds = conversationRows.map(c => c.user_one === user.id ? c.user_two : c.user_one);
+        const { data: profiles } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id", otherIds);
+        setConversations(conversationRows.map(c => ({ ...c, other: profiles?.find(p => p.id === (c.user_one === user.id ? c.user_two : c.user_one)) })));
       }
       setLoading(false);
     }
@@ -52,7 +68,12 @@ export default function MessagesPage() {
   async function addFriend(profile: Profile) {
     if (!user) return;
     const { error } = await createClient().from("friend_requests").insert({ sender_id: user.id, receiver_id: profile.id });
-    setNotice(error ? (error.code === "23505" ? "Friend request already sent." : error.message) : "Request sent to @" + profile.username + ".");
+    if (error) {
+      setNotice(error.code === "23505" ? "Friend request already sent." : error.message);
+      return;
+    }
+    setSentRequests((items) => [...items, { id: profile.id, sender_id: user.id, receiver_id: profile.id, status: "pending", receiver: profile }]);
+    setNotice("Request sent to @" + profile.username + ".");
   }
 
   async function respond(request: Request, accept: boolean) {
@@ -81,8 +102,20 @@ export default function MessagesPage() {
           <div className="flex items-end justify-between border-b border-line pb-3">
             <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">MESSAGES.</h1><MessageSquare size={20} strokeWidth={1.25}/>
           </div>
-          <div className="flex min-h-64 items-center justify-center border-b border-line text-center">
-            <div><MessageSquare className="mx-auto" size={28} strokeWidth={1.25}/><p className="mt-5 text-xs uppercase tracking-[0.12em]">No conversations yet.</p><p className="mt-2 text-[10px] text-muted">Open a friend to start chatting.</p></div>
+          <div className="border-b border-line">
+            {conversations.length === 0 ? (
+              <div className="flex min-h-64 items-center justify-center text-center">
+                <div><MessageSquare className="mx-auto" size={28} strokeWidth={1.25}/><p className="mt-5 text-xs uppercase tracking-[0.12em]">No conversations yet.</p><p className="mt-2 text-[10px] text-muted">Open a friend to start chatting.</p></div>
+              </div>
+            ) : (
+              <div>{conversations.map(conversation => conversation.other && (
+                <Link key={conversation.id} href={"/messages/" + conversation.other.username} className="flex items-center gap-4 border-b border-line py-5 hover:text-muted">
+                  <span className="h-2 w-2 rounded-full bg-fg"/>
+                  <div><p className="text-xs">@{conversation.other.username}</p><p className="mt-1 text-[10px] text-muted">Open conversation</p></div>
+                  <ArrowRight className="ml-auto" size={14}/>
+                </Link>
+              ))}</div>
+            )}
           </div>
         </section>
         <aside>
@@ -92,6 +125,8 @@ export default function MessagesPage() {
           {notice && <p className="mt-4 text-[10px] uppercase tracking-[0.08em] text-muted">{notice}</p>}
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friend requests {requests.length > 0 && "/" + requests.length}</div>
           {requests.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No pending requests.</p> : <div>{requests.map(request => request.sender && <div key={request.id} className="border-b border-line py-4"><p className="text-xs">@{request.sender.username}</p><div className="mt-3 flex gap-2"><button onClick={() => respond(request,true)} className="bg-fg px-3 py-2 text-[9px] uppercase tracking-[0.1em] text-bg">Accept</button><button onClick={() => respond(request,false)} className="border border-line px-3 py-2 text-[9px] uppercase tracking-[0.1em]">Decline</button></div></div>)}</div>}
+          <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Sent requests {sentRequests.length > 0 && "/" + sentRequests.length}</div>
+          {sentRequests.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No active requests sent.</p> : <div>{sentRequests.map(request => request.receiver && <div key={request.id} className="flex items-center justify-between border-b border-line py-4"><div><p className="text-xs">@{request.receiver.username}</p><p className="mt-1 text-[10px] uppercase tracking-[0.08em] text-muted">Pending</p></div></div>)}</div>}
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friends / {friends.length}</div>
           {friends.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No friends yet.</p> : <div>{friends.map(friend => <Link key={friend.id} href={"/messages/" + friend.username} className="flex items-center gap-3 border-b border-line py-4 hover:text-muted"><span className="h-2 w-2 rounded-full bg-fg"/><span className="text-xs">@{friend.username}</span><ArrowRight className="ml-auto" size={13}/></Link>)}</div>}
         </aside>
