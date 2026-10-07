@@ -1,0 +1,121 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ArrowLeft, MessageCircle, UserPlus, UserRound, Users } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+
+type Profile = {
+  id: string;
+  username: string;
+  bio: string;
+  avatar_url: string;
+  last_seen: string;
+};
+
+export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [me, setMe] = useState<string | null>(null);
+  const [friendCount, setFriendCount] = useState(0);
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient();
+      const { username } = await params;
+      const cleanUsername = decodeURIComponent(username).replace(/^@/, "").toLowerCase();
+
+      const { data: { user } } = await supabase.auth.getUser();
+      setMe(user?.id ?? null);
+
+      const { data, error } = await supabase.from("profiles")
+        .select("id,username,bio,avatar_url,last_seen")
+        .ilike("username", cleanUsername)
+        .maybeSingle();
+
+      if (error || !data) {
+        setLoading(false);
+        return;
+      }
+
+      setProfile(data);
+
+      const { count } = await supabase.from("friendships")
+        .select("user_id", { count: "exact", head: true })
+        .eq("user_id", data.id);
+      setFriendCount(count ?? 0);
+      setLoading(false);
+    }
+
+    load();
+  }, [params]);
+
+  async function addFriend() {
+    if (!me || !profile) return;
+    const { error } = await createClient().from("friend_requests")
+      .insert({ sender_id: me, receiver_id: profile.id });
+
+    setStatus(error ? (error.code === "23505" ? "REQUEST ALREADY SENT." : error.message) : "REQUEST SENT.");
+  }
+
+  if (loading) return <main className="mx-auto max-w-6xl px-5 py-24 text-xs uppercase tracking-[0.12em] text-muted sm:px-8">Loading...</main>;
+
+  if (!profile) {
+    return (
+      <main className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+        <Link href="/messages" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted hover:text-fg"><ArrowLeft size={13}/> Back to network</Link>
+        <h1 className="mt-20 text-5xl tracking-[-0.06em]">USER NOT FOUND.</h1>
+      </main>
+    );
+  }
+
+  const isMe = me === profile.id;
+
+  return (
+    <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+      <Link href="/messages" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted hover:text-fg"><ArrowLeft size={13}/> Back to network</Link>
+
+      <section className="mt-12 border-y border-line">
+        <div className="flex flex-col gap-10 py-10 sm:flex-row sm:items-end sm:justify-between sm:py-14">
+          <div className="flex items-end gap-5">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden border border-line">
+              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound size={30} strokeWidth={1.15}/>}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.16em] text-muted">
+                <span className="h-1.5 w-1.5 rounded-full bg-fg" /> Active member
+              </div>
+              <h1 className="mt-3 text-5xl tracking-[-0.06em] sm:text-7xl">@{profile.username}</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">{profile.bio || "No bio yet."}</p>
+            </div>
+          </div>
+
+          {!isMe && me && (
+            <div className="flex gap-2">
+              <Link href={"/messages/" + profile.username} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><MessageCircle size={14}/> Message</Link>
+              <button onClick={addFriend} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><UserPlus size={14}/> Add friend</button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid border-t border-line sm:grid-cols-3">
+          <div className="flex items-center gap-3 border-b border-line py-5 sm:border-b-0 sm:border-r sm:pr-6">
+            <Users size={16} strokeWidth={1.15}/>
+            <div><p className="text-[9px] uppercase tracking-[0.14em] text-muted">Friends</p><p className="mt-1 text-xl tracking-[-0.04em]">{friendCount}</p></div>
+          </div>
+          <div className="border-b border-line py-5 sm:border-b-0 sm:border-r sm:px-6">
+            <p className="text-[9px] uppercase tracking-[0.14em] text-muted">Status</p>
+            <p className="mt-1 text-sm uppercase tracking-[0.04em]">Online</p>
+          </div>
+          <div className="py-5 sm:pl-6">
+            <p className="text-[9px] uppercase tracking-[0.14em] text-muted">Member</p>
+            <p className="mt-1 text-sm uppercase tracking-[0.04em]">AI / HUB</p>
+          </div>
+        </div>
+      </section>
+
+      {status && <p className="mt-5 text-[10px] uppercase tracking-[0.1em] text-muted">{status}</p>}
+    </main>
+  );
+}
