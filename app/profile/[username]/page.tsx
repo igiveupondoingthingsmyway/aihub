@@ -11,6 +11,7 @@ type Profile = {
   bio: string;
   avatar_url: string;
   last_seen: string;
+  banner_url: string;
 };
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
@@ -32,7 +33,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       setMe(user?.id ?? null);
 
       const { data, error } = await supabase.from("profiles")
-        .select("id,username,bio,avatar_url,last_seen")
+        .select("id,username,bio,avatar_url,banner_url,last_seen")
         .ilike("username", cleanUsername)
         .maybeSingle();
 
@@ -135,11 +136,15 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <Link href="/messages" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted hover:text-fg"><ArrowLeft size={13}/> Back to network</Link>
 
-      <section className="mt-12 border-y border-line">
-        <div className="flex flex-col gap-10 py-10 sm:flex-row sm:items-end sm:justify-between sm:py-14">
+      <section className="mt-12 overflow-hidden border border-line">
+        <div className="relative h-72 bg-white/[0.02] sm:h-96 lg:h-[30rem]">
+          {profile.banner_url && <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />}
+        </div>
+
+        <div className="relative flex flex-col gap-10 px-5 pb-10 pt-0 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:pb-12">
           <div className="flex items-end gap-5">
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden border border-line">
-              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound size={30} strokeWidth={1.15}/>}
+            <div className="-mt-20 flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden border border-line bg-bg sm:-mt-24 sm:h-32 sm:w-32">
+              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound size={34} strokeWidth={1.15}/>}
             </div>
             <div>
               <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.16em] text-muted">
