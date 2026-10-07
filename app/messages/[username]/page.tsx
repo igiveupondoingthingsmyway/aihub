@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -56,6 +56,15 @@ export default function ChatPage({ params }: Props) {
   }, [params]);
 
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (text.trim()) {
+        void sendMessage(event as unknown as FormEvent);
+      }
+    }
+  }
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
@@ -112,7 +121,7 @@ export default function ChatPage({ params }: Props) {
       </div>
 
       <form onSubmit={sendMessage} className="mt-4 flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value.slice(0, 4000))} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
+        <input value={text} onChange={(e) => setText(e.target.value.slice(0, 4000))} onKeyDown={handleKeyDown} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
         <button disabled={!text.trim()} className="flex h-12 w-12 shrink-0 items-center justify-center bg-fg text-bg disabled:opacity-40" aria-label="Send message"><Send size={15}/></button>
       </form>
     </main>
