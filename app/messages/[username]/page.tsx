@@ -84,7 +84,6 @@ export default function ChatPage({ params }: Props) {
             )}
           </span>
           <span className="text-xs">@{username}</span>
-        </div>
           <Link href={"/profile/" + username} aria-label={"Open @" + username + " profile"} className="ml-3 text-muted hover:text-fg"><UserRound size={15} strokeWidth={1.4}/></Link>
           <button type="button" aria-label="Chat options" className="ml-1 text-muted hover:text-fg"><MoreHorizontal size={17} strokeWidth={1.4}/></button>
         </div>
