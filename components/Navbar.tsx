@@ -122,6 +122,13 @@ export function Navbar() {
 
     load();
 
+    const poll = window.setInterval(async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        await loadNotifications(authData.user.id);
+      }
+    }, 5000);
+
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setSignedIn(!!session);
       if (session?.user) {
@@ -133,6 +140,7 @@ export function Navbar() {
 
     return () => {
       data.subscription.unsubscribe();
+      window.clearInterval(poll);
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
