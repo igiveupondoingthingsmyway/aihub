@@ -69,14 +69,50 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   async function addFriend() {
     if (!me || !profile || friendState !== "none") return;
     setStatus("");
-    const { data, error } = await createClient().from("friend_requests")
+    const supabase = createClient();
+
+    const { data: existing } = await supabase.from("friend_requests")
+      .select("id,sender_id,receiver_id,status")
+      .or("and(sender_id.eq." + me + ",receiver_id.eq." + profile.id + "),and(sender_id.eq." + profile.id + ",receiver_id.eq." + me + ")")
+      .maybeSingle();
+
+    if (existing?.status === "pending") {
+      if (existing.sender_id === me) {
+        setRequestId(existing.id);
+        setFriendState("sent");
+        setStatus("REQUEST ALREADY SENT.");
+      } else {
+        setRequestId(existing.id);
+        setFriendState("received");
+        setStatus("THIS USER SENT YOU A REQUEST.");
+      }
+      return;
+    }
+
+    if (existing) {
+      const { error } = await supabase.from("friend_requests")
+        .update({ sender_id: me, receiver_id: profile.id, status: "pending" })
+        .eq("id", existing.id);
+      if (error) {
+        setStatus(error.message);
+        return;
+      }
+      setRequestId(existing.id);
+      setFriendState("sent");
+      setStatus("REQUEST SENT.");
+      return;
+    }
+
+    const { data, error } = await supabase.from("friend_requests")
       .insert({ sender_id: me, receiver_id: profile.id })
       .select("id")
       .single();
+
     if (error) {
-      setStatus(error.code === "23505" ? "REQUEST ALREADY EXISTS." : error.message);
+      setStatus(error.message);
       return;
     }
+
     setRequestId(data.id);
     setFriendState("sent");
     setStatus("REQUEST SENT.");
@@ -161,7 +197,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
               {friendState === "none" && <button onClick={addFriend} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><UserPlus size={14}/> Add friend</button>}
               {friendState === "sent" && <button onClick={cancelRequest} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><Clock3 size={14}/> Requested</button>}
               {friendState === "received" && <><button onClick={acceptRequest} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><Check size={14}/> Accept</button><button onClick={declineRequest} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><X size={14}/> Decline</button></>}
-              {friendState === "friends" && <button onClick={removeFriend} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><UserMinus size={14}/> Friends</button>}
+              {friendState === "friends" && <button onClick={removeFriend} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><UserMinus size={14}/> Remove friend</button>}
             </div>
           )}
         </div>
