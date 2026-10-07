@@ -5,12 +5,24 @@ import { FormEvent, useMemo, useState } from "react";
 import { ArrowRight, Loader2, MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-function passwordStrength(password: string) {\n  let score = 0;\n  if (password.length >= 8) score++;\n  if (password.length >= 12) score++;\n  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;\n  if (/\\d/.test(password)) score++;\n  if (/[^A-Za-z0-9]/.test(password)) score++;\n  return score;\n}\n\nexport default function SignupPage() {
+function passwordStrength(password: string) {
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  return score;
+}
+
+export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);\n  const strength = useMemo(() => passwordStrength(password), [password]);\n  const strengthLabel = ["", "Very weak", "Weak", "Fair", "Strong", "Very strong"][strength];
+  const [submitted, setSubmitted] = useState(false);
+  const strength = useMemo(() => passwordStrength(password), [password]);
+  const strengthLabel = ["", "Very weak", "Weak", "Fair", "Strong", "Very strong"][strength];
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
