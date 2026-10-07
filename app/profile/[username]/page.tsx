@@ -172,7 +172,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           </div>
           <div className="py-5 sm:pl-6">
             <p className="text-[9px] uppercase tracking-[0.14em] text-muted">Member</p>
-            <p className="mt-1 text-sm uppercase tracking-[0.04em]">AI / HUB</p>
+            <p className="mt-1 text-sm uppercase tracking-[0.04em]">SHB</p>
           </div>
         </div>
       </section>
