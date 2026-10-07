@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, MessageCircle, Search, UserPlus, Users } from "lucide-react";
+import { ArrowRight, MessageCircle, Search, UserMinus, UserPlus, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
@@ -67,13 +67,53 @@ export default function MessagesPage() {
 
   async function addFriend(profile: Profile) {
     if (!user) return;
-    const { error } = await createClient().from("friend_requests").insert({ sender_id: user.id, receiver_id: profile.id });
-    if (error) {
-      setNotice(error.code === "23505" ? "Friend request already sent." : error.message);
+    if (friends.some((friend) => friend.id === profile.id)) {
+      setNotice("Already friends with @" + profile.username + ".");
       return;
     }
-    setSentRequests((items) => [...items, { id: profile.id, sender_id: user.id, receiver_id: profile.id, status: "pending", receiver: profile }]);
+
+    const supabase = createClient();
+    const { data: existing } = await supabase.from("friend_requests")
+      .select("id,sender_id,receiver_id,status")
+      .or("and(sender_id.eq." + user.id + ",receiver_id.eq." + profile.id + "),and(sender_id.eq." + profile.id + ",receiver_id.eq." + user.id + ")")
+      .maybeSingle();
+
+    if (existing?.status === "pending") {
+      setNotice(existing.sender_id === user.id ? "Friend request already sent." : "@" + profile.username + " already sent you a request.");
+      return;
+    }
+
+    if (existing?.status === "declined" && existing.sender_id === user.id) {
+      const { error } = await supabase.from("friend_requests").update({ status: "pending" }).eq("id", existing.id).eq("sender_id", user.id);
+      if (error) { setNotice(error.message); return; }
+      setSentRequests((items) => [...items, { id: existing.id, sender_id: user.id, receiver_id: profile.id, status: "pending", receiver: profile }]);
+      setNotice("Request sent to @" + profile.username + ".");
+      return;
+    }
+
+    const { data, error } = await supabase.from("friend_requests").insert({ sender_id: user.id, receiver_id: profile.id }).select("id,sender_id,receiver_id,status").single();
+    if (error) {
+      setNotice(error.message);
+      return;
+    }
+    setSentRequests((items) => [...items, { ...data, receiver: profile }]);
     setNotice("Request sent to @" + profile.username + ".");
+  }
+
+  async function cancelRequest(request: Request) {
+    const supabase = createClient();
+    const { error } = await supabase.rpc("cancel_friend_request", { request_id: request.id });
+    if (error) { setNotice(error.message); return; }
+    setSentRequests((items) => items.filter((item) => item.id !== request.id));
+    setNotice("Friend request cancelled.");
+  }
+
+  async function removeFriend(friend: Profile) {
+    const supabase = createClient();
+    const { error } = await supabase.rpc("remove_friend", { friend_user: friend.id });
+    if (error) { setNotice(error.message); return; }
+    setFriends((items) => items.filter((item) => item.id !== friend.id));
+    setNotice("Removed @" + friend.username + " from friends.");
   }
 
   async function openChat(profile: Profile) {
@@ -92,7 +132,8 @@ export default function MessagesPage() {
     if (!user) return;
     const supabase = createClient();
     if (!accept) {
-      await supabase.from("friend_requests").update({ status: "declined" }).eq("id", request.id);
+      const { error } = await supabase.rpc("reject_friend_request", { request_id: request.id });
+      if (error) { setNotice(error.message); return; }
     } else {
       const { error } = await supabase.rpc("accept_friend_request", { request_id: request.id });
       if (error) {
@@ -231,14 +272,14 @@ export default function MessagesPage() {
                   <Link href={"/profile/" + request.receiver.username} className="min-w-0 flex-1 text-xs hover:text-muted">
                     @{request.receiver.username}
                   </Link>
-                  <span className="text-[10px] uppercase tracking-[0.08em] text-muted">Pending</span>
+                  <button onClick={() => cancelRequest(request)} className="flex items-center gap-1 border border-line px-2 py-1 text-[9px] uppercase tracking-[0.08em] hover:bg-fg hover:text-bg"><UserMinus size={11}/>Cancel</button>
                 </div>
               ))}
             </div>
           )}
 
           <div className="mt-12 border-b border-line pb-3 text-xs uppercase tracking-[0.16em]">Friends / {friends.length}</div>
-          {friends.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No friends yet.</p> : <div>{friends.map(friend => <div key={friend.id} className="flex items-center gap-3 border-b border-line py-4"><Link href={"/profile/" + friend.username} className="flex min-w-0 flex-1 items-center gap-3 hover:text-muted"><span className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line">{friend.avatar_url ? <img src={friend.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[9px] uppercase">{friend.username.slice(0, 1)}</span>}</span><span className="text-xs">@{friend.username}</span></Link><button onClick={() => openChat(friend)} aria-label={"Message @" + friend.username} className="p-2 text-muted hover:text-fg"><MessageCircle size={14}/></button></div>)}</div>}
+          {friends.length === 0 ? <p className="py-8 text-[10px] uppercase tracking-[0.08em] text-muted">No friends yet.</p> : <div>{friends.map(friend => <div key={friend.id} className="flex items-center gap-3 border-b border-line py-4"><Link href={"/profile/" + friend.username} className="flex min-w-0 flex-1 items-center gap-3 hover:text-muted"><span className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line">{friend.avatar_url ? <img src={friend.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[9px] uppercase">{friend.username.slice(0, 1)}</span>}</span><span className="text-xs">@{friend.username}</span></Link><div className="flex items-center gap-1"><button onClick={() => openChat(friend)} aria-label={"Message @" + friend.username} className="p-2 text-muted hover:text-fg"><MessageCircle size={14}/></button><button onClick={() => removeFriend(friend)} aria-label={"Remove @" + friend.username} className="p-2 text-muted hover:text-fg"><UserMinus size={14}/></button></div></div>)}</div>}
         </aside>
       </div>
     </main>
