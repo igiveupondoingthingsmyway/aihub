@@ -6,12 +6,12 @@ import { ArrowLeft, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { params: Promise<{ username: string }> };
-type Message = { id: string; sender_id: string; content: string; created_at: string };
+type Message = { id: string; sender_id: string; content: string; created_at: string };\ntype Profile = { id: string; username: string; avatar_url: string };
 
 export default function ChatPage({ params }: Props) {
   const [username, setUsername] = useState("");
   const [me, setMe] = useState("");
-  const [otherId, setOtherId] = useState("");
+  const [otherId, setOtherId] = useState("");\n  const [profile, setProfile] = useState<Profile | null>(null);
   const [conversationId, setConversationId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
@@ -34,7 +34,7 @@ export default function ChatPage({ params }: Props) {
       if (!profile) { setError("User not found."); setLoading(false); return; }
       setOtherId(profile.id);
 
-      const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
+      const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: targetProfile.id });
       if (rpcError || !conversation) { setError(rpcError?.message ?? "Unable to open conversation."); setLoading(false); return; }
       setConversationId(conversation);
 
@@ -73,7 +73,7 @@ export default function ChatPage({ params }: Props) {
     <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-16">
       <div className="flex items-center justify-between border-y border-line py-4">
         <Link href="/messages" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"><ArrowLeft size={14}/> Messages</Link>
-        <span className="text-xs">@{username}</span>
+        <div className="flex items-center gap-3">\n          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">\n            {profile?.avatar_url ? (\n              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />\n            ) : (\n              <span className="text-[9px] uppercase">{username.slice(0, 1)}</span>\n            )}\n          </span>\n          <span className="text-xs">@{username}</span>\n        </div>
       </div>
 
       <div className="mt-6 min-h-[55vh] border-b border-line">
