@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, MessageCircle, UserPlus, UserRound, Users } from "lucide-react";
+import { ArrowLeft, Check, Clock3, MessageCircle, UserMinus, UserPlus, UserRound, Users, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -18,6 +18,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const [me, setMe] = useState<string | null>(null);
   const [friendCount, setFriendCount] = useState(0);
   const [status, setStatus] = useState("");
+  const [friendState, setFriendState] = useState<"none" | "friends" | "sent" | "received">("none");
+  const [requestId, setRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +43,18 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
       setProfile(data);
 
+      if (user && user.id !== data.id) {
+        const { data: friendship } = await supabase.from("friendships").select("friend_id").eq("user_id", user.id).eq("friend_id", data.id).maybeSingle();
+        if (friendship) {
+          setFriendState("friends");
+        } else {
+          const { data: outgoing } = await supabase.from("friend_requests").select("id").eq("sender_id", user.id).eq("receiver_id", data.id).eq("status", "pending").maybeSingle();
+          const { data: incoming } = await supabase.from("friend_requests").select("id").eq("sender_id", data.id).eq("receiver_id", user.id).eq("status", "pending").maybeSingle();
+          if (outgoing) { setFriendState("sent"); setRequestId(outgoing.id); }
+          else if (incoming) { setFriendState("received"); setRequestId(incoming.id); }
+        }
+      }
+
       const { count } = await supabase.from("friendships")
         .select("user_id", { count: "exact", head: true })
         .eq("user_id", data.id);
@@ -52,11 +66,56 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   }, [params]);
 
   async function addFriend() {
-    if (!me || !profile) return;
-    const { error } = await createClient().from("friend_requests")
-      .insert({ sender_id: me, receiver_id: profile.id });
+    if (!me || !profile || friendState !== "none") return;
+    setStatus("");
+    const { data, error } = await createClient().from("friend_requests")
+      .insert({ sender_id: me, receiver_id: profile.id })
+      .select("id")
+      .single();
+    if (error) {
+      setStatus(error.code === "23505" ? "REQUEST ALREADY EXISTS." : error.message);
+      return;
+    }
+    setRequestId(data.id);
+    setFriendState("sent");
+    setStatus("REQUEST SENT.");
+  }
 
-    setStatus(error ? (error.code === "23505" ? "REQUEST ALREADY SENT." : error.message) : "REQUEST SENT.");
+  async function cancelRequest() {
+    if (!requestId) return;
+    const { error } = await createClient().rpc("cancel_friend_request", { request_id: requestId });
+    if (error) { setStatus(error.message); return; }
+    setRequestId(null);
+    setFriendState("none");
+    setStatus("REQUEST CANCELLED.");
+  }
+
+  async function acceptRequest() {
+    if (!requestId) return;
+    const { error } = await createClient().rpc("accept_friend_request", { request_id: requestId });
+    if (error) { setStatus(error.message); return; }
+    setRequestId(null);
+    setFriendState("friends");
+    setFriendCount((count) => count + 1);
+    setStatus("YOU ARE NOW FRIENDS.");
+  }
+
+  async function declineRequest() {
+    if (!requestId) return;
+    const { error } = await createClient().rpc("reject_friend_request", { request_id: requestId });
+    if (error) { setStatus(error.message); return; }
+    setRequestId(null);
+    setFriendState("none");
+    setStatus("REQUEST DECLINED.");
+  }
+
+  async function removeFriend() {
+    if (!profile) return;
+    const { error } = await createClient().rpc("remove_friend", { friend_user: profile.id });
+    if (error) { setStatus(error.message); return; }
+    setFriendState("none");
+    setFriendCount((count) => Math.max(0, count - 1));
+    setStatus("FRIEND REMOVED.");
   }
 
   if (loading) return <main className="mx-auto max-w-6xl px-5 py-24 text-xs uppercase tracking-[0.12em] text-muted sm:px-8">Loading...</main>;
@@ -94,7 +153,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           {!isMe && me && (
             <div className="flex gap-2">
               <Link href={"/messages/" + profile.username} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><MessageCircle size={14}/> Message</Link>
-              <button onClick={addFriend} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><UserPlus size={14}/> Add friend</button>
+              {friendState === "none" && <button onClick={addFriend} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><UserPlus size={14}/> Add friend</button>}
+              {friendState === "sent" && <button onClick={cancelRequest} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><Clock3 size={14}/> Requested</button>}
+              {friendState === "received" && <><button onClick={acceptRequest} className="flex items-center gap-2 bg-fg px-4 py-3 text-[10px] uppercase tracking-[0.12em] text-bg"><Check size={14}/> Accept</button><button onClick={declineRequest} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><X size={14}/> Decline</button></>}
+              {friendState === "friends" && <button onClick={removeFriend} className="flex items-center gap-2 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg"><UserMinus size={14}/> Friends</button>}
             </div>
           )}
         </div>
