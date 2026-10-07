@@ -136,14 +136,14 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <Link href="/messages" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted hover:text-fg"><ArrowLeft size={13}/> Back to network</Link>
 
-      <section className="mt-12 overflow-hidden border border-line">
-        <div className="relative h-72 bg-white/[0.02] sm:h-96 lg:h-[30rem]">
+      <section className="mt-16 overflow-hidden border border-line sm:mt-20">
+        <div className="relative h-40 bg-white/[0.02] sm:h-52 lg:h-60">
           {profile.banner_url && <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />}
         </div>
 
-        <div className="relative flex flex-col gap-10 px-5 pb-10 pt-0 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:pb-12">
+        <div className="relative flex flex-col gap-8 px-5 pb-8 pt-0 sm:flex-row sm:items-end sm:justify-between sm:px-8 sm:pb-10">
           <div className="flex items-end gap-5">
-            <div className="-mt-20 flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden border border-line bg-bg sm:-mt-24 sm:h-32 sm:w-32">
+            <div className="-mt-20 flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden border border-line bg-bg sm:-mt-20 sm:h-28 sm:w-28">
               {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <UserRound size={34} strokeWidth={1.15}/>}
             </div>
             <div>
