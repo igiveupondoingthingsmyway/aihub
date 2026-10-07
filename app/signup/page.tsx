@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { ArrowRight, Loader2, MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignupPage() {
+function passwordStrength(password: string) {\n  let score = 0;\n  if (password.length >= 8) score++;\n  if (password.length >= 12) score++;\n  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;\n  if (/\\d/.test(password)) score++;\n  if (/[^A-Za-z0-9]/.test(password)) score++;\n  return score;\n}\n\nexport default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);\n  const strength = useMemo(() => passwordStrength(password), [password]);\n  const strengthLabel = ["", "Very weak", "Weak", "Fair", "Strong", "Very strong"][strength];
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -72,10 +72,10 @@ export default function SignupPage() {
           </label>
           <label className="block">
             <span className="mb-2 block text-[10px] uppercase tracking-[0.12em] text-muted">Password</span>
-            <input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 w-full border border-line bg-transparent px-4 text-sm focus:border-fg focus:outline-none" />
+            <input required minLength={8} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 w-full border border-line bg-transparent px-4 text-sm focus:border-fg focus:outline-none" />
           </label>
           {message && <p className="border border-line px-4 py-3 text-xs leading-5 text-muted">{message}</p>}
-          <button disabled={loading} className="flex h-12 w-full items-center justify-center gap-3 bg-fg text-bg text-[11px] uppercase tracking-[0.12em] disabled:opacity-50">
+          <button disabled={loading || strength < 3} className="flex h-12 w-full items-center justify-center gap-3 bg-fg text-bg text-[11px] uppercase tracking-[0.12em] disabled:opacity-50">
             {loading ? <Loader2 size={15} className="animate-spin" /> : <>Create account <ArrowRight size={15} /></>}
           </button>
         </form>
