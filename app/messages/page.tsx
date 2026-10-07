@@ -55,6 +55,12 @@ export default function MessagesPage() {
       setLoading(false);
     }
     load();
+
+    const poll = window.setInterval(() => {
+      void load();
+    }, 5000);
+
+    return () => window.clearInterval(poll);
   }, []);
 
   async function searchPeople(value: string) {
