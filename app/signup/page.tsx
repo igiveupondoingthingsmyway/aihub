@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 function passwordStrength(password: string) {
@@ -20,7 +20,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const strength = useMemo(() => passwordStrength(password), [password]);
@@ -43,35 +42,17 @@ export default function SignupPage() {
       });
 
       if (error) throw error;
-      setSubmitted(true);
+      if (!data.session) {
+        throw new Error("Email confirmation is still enabled in Supabase. Disable Confirm email in Authentication settings.");
+      }
+      window.location.href = "/profile";
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to create your account.");
     } finally {
       setLoading(false);
     }
   }
-
-  if (submitted) {
-    return (
-      <main className="mx-auto flex min-h-[calc(100vh-65px)] max-w-6xl items-center px-5 py-16 sm:px-8">
-        <div className="w-full max-w-md">
-          <div className="mb-10 flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-muted">
-            <span className="h-px w-8 bg-line" />
-            Account / Confirmation
-          </div>
-          <MailCheck size={28} strokeWidth={1.25} />
-          <h1 className="mt-7 text-4xl tracking-[-0.05em] sm:text-5xl">CHECK YOUR EMAIL.</h1>
-          <p className="mt-4 text-sm leading-7 text-muted">
-            We sent a confirmation link to <span className="text-fg">{email}</span>. Confirm your email to activate your AI Hub account.
-          </p>
-          <Link href="/login" className="mt-8 flex h-12 items-center justify-center gap-3 bg-fg text-bg text-[11px] uppercase tracking-[0.12em]">
-            Go to login <ArrowRight size={15} />
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
+ 
   return (
     <main className="mx-auto flex min-h-[calc(100vh-65px)] max-w-6xl items-center px-5 py-16 sm:px-8">
       <div className="w-full max-w-md">
