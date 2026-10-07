@@ -213,7 +213,7 @@ export function Navbar() {
                             href={"/messages/" + notification.sender?.username}
                             onClick={async () => {
                               setNotificationOpen(false);
-                              await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+                              await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
                               setMessageNotifications((items) => items.filter((item) => item.id !== notification.id));
                             }}
                             className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg"
