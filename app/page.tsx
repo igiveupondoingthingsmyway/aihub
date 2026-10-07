@@ -13,8 +13,8 @@ export default function Home() {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="max-w-5xl text-5xl font-normal leading-[0.84] tracking-[-0.075em] sm:text-7xl lg:text-[7.5rem]">
-              <span className="hero-word">GO IN.</span><br />
-              <span className="hero-word text-muted">GO TIME.</span>
+              <span className="hero-word">GO IN</span><br />
+              <span className="hero-word text-muted">GO TIME</span>
             </h1>
             <p className="mt-9 max-w-xl text-sm leading-7 text-muted sm:text-base">
               Find people. Talk. Share what you use. Discover AI together.
