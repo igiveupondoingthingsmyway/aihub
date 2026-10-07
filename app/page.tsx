@@ -8,9 +8,9 @@ export default function Home() {
           <span className="h-px w-8 bg-line" />
           Independent AI directory
         </div>
-        <h1 className="max-w-5xl text-5xl font-medium leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
-          GO IN.<br />
-          <span className="text-muted">GO TIME.</span>
+        <h1 className="max-w-5xl text-5xl font-normal leading-[0.86] tracking-[-0.075em] sm:text-7xl lg:text-[7.5rem]">
+          <span className="hero-word">GO IN.</span><br />
+          <span className="hero-word text-muted">GO TIME.</span>
         </h1>
         <div className="mt-9 flex max-w-2xl flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <p className="max-w-xl text-sm leading-7 text-muted sm:text-base">
