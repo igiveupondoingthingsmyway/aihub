@@ -35,7 +35,7 @@ export default async function ConfirmedPage({ searchParams }: Props) {
             </div>
             <h1 className="mt-7 text-4xl tracking-[-0.05em] sm:text-5xl">EMAIL VERIFIED.</h1>
             <p className="mt-4 text-sm leading-7 text-muted">
-              Your AI Hub account is confirmed and ready to use.
+              Your SHB account is confirmed and ready to use.
             </p>
             <Link href="/profile" className="mt-8 flex h-12 items-center justify-center gap-3 bg-fg text-bg text-[11px] uppercase tracking-[0.12em]">
               Go to profile <ArrowRight size={15} />
