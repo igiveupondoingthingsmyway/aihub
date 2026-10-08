@@ -265,7 +265,7 @@ export default function ChatPage({ params }: Props) {
           <div className="space-y-3 py-6">
             {messages.map((message) => {
               const sticker = getSticker(message.content);
-              return (\n    
+              return (
               <div key={message.id} className={"flex " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                 <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
                   {sticker ? (
