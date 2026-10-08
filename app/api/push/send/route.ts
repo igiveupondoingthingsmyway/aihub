@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { sendPushNotification, type PushKind } from "@/lib/push";
+import { createClient } from "@supabase/supabase-js";
 
 const allowedKinds: PushKind[] = ["message", "post_like", "post_comment", "friend", "friend_accepted"];
 
@@ -39,9 +40,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ sent: 0 });
     }
 
-    const senderUsername = typeof user.user_metadata?.username === "string"
-      ? user.user_metadata.username
-      : "someone";
+    const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { autoRefreshToken: false, persistSession: false } });
+    const { data: senderProfile } = await admin.from("profiles").select("username").eq("id", user.id).maybeSingle();
+    const senderUsername = senderProfile?.username ?? (typeof user.user_metadata?.username === "string" ? user.user_metadata.username : "someone");
 
     const result = await sendPushNotification({
       userId: targetUserId,
