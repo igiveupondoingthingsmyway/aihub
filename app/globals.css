@@ -262,3 +262,79 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-public-profile .h-32{height:110px}
 .mobile-public-profile article{padding-block:22px}
 }
+
+
+/* Mobile notifications panel */
+.mobile-notification-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mobile-notification-panel-header {
+  flex: 0 0 52px;
+  height: 52px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 0 16px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 9px;
+  letter-spacing: .16em;
+}
+.mobile-notification-panel-header button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+}
+.mobile-notification-panel-header .mobile-overlay-spacer { width: 36px; }
+.mobile-notification-overlay > div:last-child {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+}
+.mobile-push-setup {
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.mobile-push-setup > div {
+  margin-top: 0 !important;
+  border-top: 0 !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px;
+}
+.mobile-notification-row {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 68px;
+  box-sizing: border-box;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+.mobile-notification-row span {
+  min-width: 0;
+  overflow: hidden;
+}
+.mobile-notification-row b,
+.mobile-notification-row small {
+  display: block;
+  overflow-wrap: anywhere;
+}
