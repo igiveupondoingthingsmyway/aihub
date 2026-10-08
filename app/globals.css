@@ -145,3 +145,37 @@ button, input, textarea, select { font-weight: 400; }
 @media (min-width:768px) {
   .mobile-only { display:none; }
 }
+
+.mobile-page { min-height:calc(100dvh - 114px); }
+.mobile-page-title { padding:28px 16px 18px; border-bottom:1px solid var(--line); }
+.mobile-page-title > span { display:block; margin-bottom:12px; font-size:8px; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; }
+.mobile-page-title h1 { margin:0; font-size:46px!important; line-height:.9!important; letter-spacing:-.08em!important; }
+.mobile-tabs { display:grid; grid-template-columns:repeat(3,1fr); border-bottom:1px solid var(--line); }
+.mobile-tabs button { height:42px; font-size:8px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); border-right:1px solid var(--line); }
+.mobile-tabs button:last-child { border-right:0; }
+.mobile-tabs button.active { color:var(--fg); box-shadow:inset 0 -2px 0 var(--fg); }
+.mobile-error,.mobile-empty { margin:16px; border:1px solid var(--line); padding:18px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.mobile-empty { margin:36px 16px; text-align:center; padding:48px 18px; }
+.mobile-empty small { display:block; margin-top:10px; font-size:8px; letter-spacing:.12em; }
+.mobile-loading { display:flex; justify-content:center; align-items:center; gap:10px; padding:70px 0; font-size:8px; letter-spacing:.16em; color:var(--muted); }
+.mobile-loading span { letter-spacing:4px; animation:mobile-dots 1s steps(4) infinite; }
+.mobile-post-list { padding:0 16px; }
+.mobile-post { padding:20px 0; border-bottom:1px solid var(--line); }
+.mobile-post-head { display:flex; align-items:center; gap:9px; min-width:0; font-size:7px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase; }
+.mobile-post-head > span { margin-left:auto; white-space:nowrap; }
+.mobile-post-head > button { margin-left:4px; padding:5px; color:var(--muted); }
+.mobile-user { display:flex; align-items:center; gap:8px; min-width:0; color:var(--fg); }
+.mobile-user img,.mobile-user > span { width:30px; height:30px; flex:none; object-fit:cover; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:8px; }
+.mobile-user b { font-size:9px; font-weight:400; letter-spacing:.06em; }
+.mobile-post-text { margin:15px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.75; }
+.mobile-post-actions { display:flex; gap:18px; margin-top:15px; }
+.mobile-post-actions button { display:flex; align-items:center; gap:7px; font-size:8px; letter-spacing:.1em; color:var(--muted); }
+.mobile-post-actions button.liked { color:var(--fg); }
+.mobile-comments { margin-top:15px; padding:13px 0 0 13px; border-left:1px solid var(--line); }
+.mobile-comment { display:flex; flex-direction:column; gap:5px; margin-bottom:13px; font-size:10px; line-height:1.5; }
+.mobile-comment b { font-size:8px; font-weight:400; letter-spacing:.06em; }
+.mobile-comment span { color:var(--muted); }
+.mobile-comment-input { display:flex; border-top:1px solid var(--line); padding-top:10px; }
+.mobile-comment-input input { min-width:0; flex:1; background:transparent; border:0; outline:0; font:400 10px var(--font-yzy); color:var(--fg); }
+.mobile-comment-input button { width:32px; display:flex; align-items:center; justify-content:center; }
+@keyframes mobile-dots { 0%,100%{opacity:.3} 50%{opacity:1} }
