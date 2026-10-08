@@ -240,25 +240,7 @@ export default function ChatPage({ params }: Props) {
   if (error) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"><div className="byte-state" role="alert"><Byte state="error" /><h3>Something broke</h3><p>{error}</p><button type="button" className="byte-retry" onClick={() => { setError(""); setLoading(true); setRetryKey((key) => key + 1); }}>Retry</button><Link href="/messages" className="mt-4 text-[9px] uppercase tracking-[0.12em] underline">Back to messages</Link></div></main>;
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">\n      <svg width="0" height="0" style={{position:"absolute"}} aria-hidden="true">
-        <defs>
-          <symbol id="bub" viewBox="0 0 48 48"><path d="M5 5h38v30H20l-9 8v-8H5z" fill="none" stroke="currentColor" strokeWidth="2.5"/></symbol>
-          <symbol id="f-class" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="17" width="4" height="4"/><rect x="15" y="13" width="4" height="4"/><rect x="19" y="17" width="4" height="4"/><rect x="25" y="17" width="4" height="4"/><rect x="29" y="13" width="4" height="4"/><rect x="33" y="17" width="4" height="4"/><rect x="15" y="24" width="4" height="3"/><rect x="19" y="27" width="10" height="3"/><rect x="29" y="24" width="4" height="3"/></g></symbol>
-          <symbol id="f-dislike" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="16" width="10" height="3"/><rect x="27" y="16" width="10" height="3"/><rect x="15" y="28" width="4" height="3"/><rect x="19" y="25" width="10" height="3"/><rect x="29" y="28" width="4" height="3"/></g></symbol>
-          <symbol id="f-love" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><g transform="translate(9 11)"><rect x="3" width="3" height="3"/><rect x="9" width="3" height="3"/><rect y="3" width="15" height="3"/><rect x="3" y="6" width="9" height="3"/><rect x="6" y="9" width="3" height="3"/></g><g transform="translate(26 11)"><rect x="3" width="3" height="3"/><rect x="9" width="3" height="3"/><rect y="3" width="15" height="3"/><rect x="3" y="6" width="9" height="3"/><rect x="6" y="9" width="3" height="3"/></g><rect x="19" y="28" width="10" height="3"/></g></symbol>
-          <symbol id="f-laugh" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="13" width="4" height="4"/><rect x="15" y="17" width="4" height="4"/><rect x="11" y="21" width="4" height="4"/><rect x="33" y="13" width="4" height="4"/><rect x="29" y="17" width="4" height="4"/><rect x="33" y="21" width="4" height="4"/><rect x="17" y="27" width="14" height="5"/></g></symbol>
-          <symbol id="f-wow" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="12" y="11" width="6" height="9"/><rect x="30" y="11" width="6" height="9"/></g><rect x="21" y="25" width="6" height="6" fill="none" stroke="currentColor" strokeWidth="3"/></symbol>
-          <symbol id="f-sad" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="12" y="14" width="5" height="5"/><rect x="31" y="14" width="5" height="5"/><rect x="13" y="21" width="3" height="6"/><rect x="17" y="30" width="3" height="3"/><rect x="20" y="27" width="8" height="3"/><rect x="28" y="30" width="3" height="3"/></g></symbol>
-          <symbol id="f-cool" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="9" y="13" width="12" height="8"/><rect x="27" y="13" width="12" height="8"/><rect x="21" y="15" width="6" height="3"/><rect x="19" y="27" width="10" height="3"/><rect x="29" y="25" width="3" height="3"/></g></symbol>
-          <symbol id="f-think" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="14" y="11" width="5" height="5"/><rect x="33" y="11" width="5" height="5"/><rect x="15" y="28" width="4" height="3"/><rect x="19" y="25" width="4" height="3"/><rect x="23" y="28" width="4" height="3"/><rect x="27" y="25" width="4" height="3"/></g></symbol>
-          <symbol id="f-angry" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="10" y="9" width="4" height="3"/><rect x="14" y="11" width="4" height="3"/><rect x="18" y="13" width="4" height="3"/><rect x="34" y="9" width="4" height="3"/><rect x="30" y="11" width="4" height="3"/><rect x="26" y="13" width="4" height="3"/><rect x="14" y="18" width="5" height="5"/><rect x="29" y="18" width="5" height="5"/><rect x="18" y="28" width="12" height="3"/></g></symbol>
-          <symbol id="f-error" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="13" width="4" height="4"/><rect x="19" y="13" width="4" height="4"/><rect x="15" y="17" width="4" height="4"/><rect x="11" y="21" width="4" height="4"/><rect x="19" y="21" width="4" height="4"/><rect x="29" y="13" width="4" height="4"/><rect x="37" y="13" width="4" height="4"/><rect x="33" y="17" width="4" height="4"/><rect x="29" y="21" width="4" height="4"/><rect x="37" y="21" width="4" height="4"/><rect x="19" y="28" width="10" height="3"/></g></symbol>
-          <symbol id="f-wink" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="17" width="10" height="3"/><rect x="29" y="13" width="6" height="8"/><rect x="15" y="24" width="4" height="3"/><rect x="19" y="27" width="10" height="3"/><rect x="29" y="24" width="4" height="3"/></g></symbol>
-          <symbol id="f-sleepy" viewBox="0 0 48 48"><use href="#bub"/><g fill="currentColor"><rect x="11" y="18" width="10" height="3"/><rect x="27" y="18" width="10" height="3"/><rect x="22" y="27" width="4" height="4"/></g></symbol>
-        </defs>
-      </svg>
-
-      <div className="flex items-center justify-between border-y border-line py-4">
+    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">\n      <div className="flex items-center justify-between border-y border-line py-4">
         <Link href="/messages" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"><ArrowLeft size={14}/> Messages</Link>
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">
@@ -273,7 +255,6 @@ export default function ChatPage({ params }: Props) {
           <button type="button" aria-label="Chat options" className="ml-1 text-muted hover:text-fg"><MoreHorizontal size={17} strokeWidth={1.4}/></button>
         </div>
       </div>
-
       <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-[1fr_280px]">
         <section className="min-h-[55vh] border-b border-line">
         {messages.length === 0 ? (
@@ -287,7 +268,7 @@ export default function ChatPage({ params }: Props) {
                 <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
                   {sticker ? (
                     <div className="flex flex-col items-center py-1" aria-label={sticker.label + " sticker"}>
-                      <div className="flex h-24 w-24 items-center justify-center border border-line bg-bg p-3"><svg className="h-full w-full" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg></div>
+                      <div className="flex h-24 w-24 items-center justify-center p-3"><img src={"/stickers.svg#" + sticker.symbolId} alt="" className="h-full w-full object-contain" /></div>
                       <span className="mt-2 text-[7px] uppercase tracking-[0.18em] opacity-50">{sticker.label}</span>
                     </div>
                   ) : <div>{message.content}</div>}
@@ -357,7 +338,7 @@ export default function ChatPage({ params }: Props) {
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                   {recentStickers.map((id) => {
                     const sticker = STICKERS.find((item) => item.id === id)!;
-                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line p-2 hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}><svg className="h-full w-full" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg></button>;
+                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line p-2 hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}><img src={"/stickers.svg#" + sticker.symbolId} alt="" className="h-full w-full object-contain" /></button>;
                   })}
                 </div>
               </div>
