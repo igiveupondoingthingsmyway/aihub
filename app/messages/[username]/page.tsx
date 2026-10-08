@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, KeyboardEvent, use, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound, Users, Sticker, X, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useParams } from "next/navigation";
 import { Byte } from "@/components/Byte";
 import { ByteSticker } from "@/components/ByteSticker";
 
-type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
 type StickerId = "class" | "dislike" | "love" | "laugh" | "wow" | "sad" | "cool" | "think" | "angry" | "error" | "wink" | "sleepy";
 const STICKERS: Array<{ id: StickerId; label: string; symbolId: string }> = [
@@ -25,9 +25,9 @@ const getSticker = (content: string) => {
 };
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 
-export default function ChatPage({ params }: Props) {
-  const { username: rawUsername } = use(params);
-  const targetUsername = decodeURIComponent(rawUsername).toLowerCase();
+export default function ChatPage() {
+  const routeParams = useParams<{ username: string }>();
+  const targetUsername = decodeURIComponent(routeParams.username ?? "").toLowerCase();
   const [username, setUsername] = useState(targetUsername);
   const [me, setMe] = useState("");
   const [otherId, setOtherId] = useState("");
