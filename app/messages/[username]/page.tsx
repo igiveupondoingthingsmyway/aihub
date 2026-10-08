@@ -80,7 +80,7 @@ export default function ChatPage({ params }: Props) {
   }
 
   if (loading) return <main className="mx-auto max-w-6xl px-5 py-24 text-xs uppercase tracking-[0.12em] text-muted sm:px-8">Loading...</main>;
-  if (error) return <main className="mx-auto max-w-6xl max-w-6xl px-5 py-24 sm:px-8"><p className="text-sm">{error}</p><Link href="/messages" className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.1em] underline">Back to messages</Link></main>;
+  if (error) return <main className="mx-auto max-w-6xl px-5 py-24 sm:px-8"><p className="text-sm">{error}</p><Link href="/messages" className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.1em] underline">Back to messages</Link></main>;
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
