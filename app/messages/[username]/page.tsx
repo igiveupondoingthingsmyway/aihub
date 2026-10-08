@@ -38,7 +38,7 @@ export default function ChatPage({ params }: Props) {
       setOtherId(profile.id);
 
       if (profile.avatar_url) {
-        const isExternalUrl = /^https?:\\/\\//i.test(profile.avatar_url);
+        const isExternalUrl = profile.avatar_url.startsWith("http://") || profile.avatar_url.startsWith("https://");
         if (isExternalUrl) {
           const marker = "/storage/v1/object/public/profile-media/";
           const markerIndex = profile.avatar_url.indexOf(marker);
