@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
       const { data: dbProfile } = await supabase
         .from("profiles")
-        .select("username,bio,avatar_url,banner_url")
+        .select("username,bio,avatar_url,banner_url,show_online")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -48,7 +48,7 @@ export default function ProfilePage() {
         bio: dbProfile?.bio ?? metadata.bio ?? "",
         avatar_url: dbProfile?.avatar_url ?? metadata.avatar_url ?? "",
         banner_url: dbProfile?.banner_url ?? metadata.banner_url ?? "",
-        online: true,
+        online: dbProfile?.show_online ?? true,
       });
       setLoading(false);
     }
@@ -104,6 +104,7 @@ export default function ProfilePage() {
       bio,
       avatar_url: profile.avatar_url,
       banner_url: profile.banner_url,
+      show_online: profile.online,
     });
 
     if (profileError) {
@@ -113,7 +114,7 @@ export default function ProfilePage() {
     }
 
     const { error: authError } = await supabase.auth.updateUser({
-      data: { username, bio, avatar_url: profile.avatar_url, banner_url: profile.banner_url },
+      data: { username, bio, avatar_url: profile.avatar_url, banner_url: profile.banner_url, show_online: profile.online },
     });
 
     setMessage(authError ? authError.message : "Profile saved.");
@@ -125,7 +126,7 @@ export default function ProfilePage() {
     window.location.href = "/";
   }
 
-  if (loading) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8"><div className="byte-loader" role="status" aria-live="polite"><Byte state="loading" /><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;;
+  if (loading) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8"><div className="byte-loader" role="status" aria-live="polite"><Byte state="loading" /><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
@@ -151,7 +152,7 @@ export default function ProfilePage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em]">
-              <span className="h-2 w-2 rounded-full bg-fg" /> Online
+              <span className={"h-2 w-2 rounded-full " + (profile.online ? "bg-fg" : "bg-muted")} /> {profile.online ? "Online" : "Offline"}
             </div>
             <h1 className="mt-3 text-4xl tracking-[-0.05em] sm:text-6xl">{profile.username || "YOUR PROFILE"}</h1>
             <p className="mt-2 text-sm text-muted">{email}</p>
