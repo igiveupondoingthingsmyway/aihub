@@ -15,9 +15,20 @@ export function PushSetup() {
   const [message, setMessage] = useState("");
 
   async function enable() {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+
     if (!window.isSecureContext) {
       setStatus("error");
       setMessage("Push requires HTTPS.");
+      return;
+    }
+
+    if (isIOS && !isStandalone) {
+      setStatus("error");
+      setMessage("On iPhone, open SHB from the Home Screen app icon. Safari tabs cannot receive web push.");
       return;
     }
 
