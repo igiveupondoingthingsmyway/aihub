@@ -243,3 +243,13 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-tools-page section{margin-top:32px!important}
 .mobile-tools-page section>div.grid{grid-template-columns:1fr!important}
 .mobile-tools-page .grid{display:grid}
+
+.mobile-header-actions{display:flex;align-items:center;gap:5px}
+.mobile-notification-button{position:relative;display:flex;align-items:center;justify-content:center;width:34px;height:34px;color:var(--fg)}
+.mobile-notification-button span{position:absolute;right:1px;top:1px;min-width:13px;height:13px;padding:0 3px;border-radius:99px;background:var(--fg);color:var(--bg);font-size:7px;line-height:13px;text-align:center}
+.mobile-notification-overlay{position:fixed;inset:0;z-index:100;background:var(--bg);overflow:auto;padding-bottom:72px}
+.mobile-notification-row{display:flex;align-items:center;gap:13px;padding:17px 16px;border-bottom:1px solid var(--line)}
+.mobile-notification-row>svg{flex:none}
+.mobile-notification-row span{display:flex;min-width:0;flex-direction:column;gap:5px}
+.mobile-notification-row b{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.mobile-notification-row small{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
