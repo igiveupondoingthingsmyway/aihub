@@ -6,6 +6,9 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
 
+const BYTE_ICON_SMALL = "/ic_stat_byte_96.png.png";
+const BYTE_ICON_LARGE = "/byte-icon-512.png.png";
+
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 type Conversation = { id: string; user_one: string; user_two: string; other?: Profile };
 
@@ -76,7 +79,7 @@ export default function MessagesPage() {
         {conversations.length === 0 ? (
           <div className="flex min-h-72 items-center justify-center border-b border-line text-center">
             <div>
-              <MessageCircle className="mx-auto" size={30} strokeWidth={1.1} />
+              <img src={BYTE_ICON_LARGE} alt="" className="mx-auto h-20 w-20 object-contain" />
               <p className="mt-5 text-xs uppercase tracking-[0.14em]">No conversations yet.</p>
               <p className="mt-2 max-w-xs text-[10px] leading-5 text-muted">Go to Network and start a conversation with someone.</p>
               <Link href="/network" className="mt-5 inline-flex items-center gap-2 border border-line px-4 py-3 text-[9px] uppercase tracking-[0.12em] hover:bg-fg hover:text-bg">Find people <ArrowRight size={12}/></Link>
@@ -94,7 +97,7 @@ export default function MessagesPage() {
                   {conversation.other.avatar_url ? (
                     <img src={conversation.other.avatar_url} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-[10px] uppercase">{conversation.other.username.slice(0, 1)}</span>
+                    <img src={BYTE_ICON_SMALL} alt="" className="h-full w-full object-contain p-1" />
                   )}
                 </span>
                 <div>
