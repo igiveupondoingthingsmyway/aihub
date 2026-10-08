@@ -358,13 +358,17 @@ export default function Home() {
                 </div>
 
                 {isCommentsOpen && (
-                  <div className="mt-5 border-t border-line pt-5">
-                    <div className="space-y-4">
+                  <div className="mt-6 ml-3 border-l-2 border-line pl-5 sm:ml-6 sm:pl-6">
+                    <div className="mb-4 flex items-center gap-2 text-[9px] uppercase tracking-[0.16em] text-muted">
+                      <MessageCircle size={12} strokeWidth={1.25} />
+                      <span>Comments</span>
+                    </div>
+                    <div className="space-y-5">
                       {postComments.length === 0 ? (
                         <p className="text-[9px] uppercase tracking-[0.14em] text-muted">No comments yet.</p>
                       ) : (
                         postComments.map((comment) => (
-                          <div key={comment.id} className="flex items-start justify-between gap-4">
+                          <div key={comment.id} className="relative flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
                                 <Link href={`/profile/${comment.author.username}`} className="text-[10px] uppercase tracking-[0.06em] hover:underline">
@@ -372,7 +376,7 @@ export default function Home() {
                                 </Link>
                                 <span className="text-[8px] uppercase tracking-[0.1em] text-muted">/ {formatTime(comment.created_at)}</span>
                               </div>
-                              <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6">{comment.content}</p>
+                              <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-fg/90">{comment.content}</p>
                             </div>
 
                             {comment.author_id === userId && (
@@ -392,7 +396,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="mt-5 flex gap-2 border-t border-line pt-4">
+                    <div className="mt-6 flex gap-2 border-t border-line pt-4">
                       <input
                         value={commentText[post.id] ?? ""}
                         onChange={(e) => setCommentText((current) => ({ ...current, [post.id]: e.target.value.slice(0, 2000) }))}
