@@ -253,7 +253,7 @@ export default function ChatPage({ params }: Props) {
   if (error) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"><div className="byte-state" role="alert"><Byte state="error" /><h3>Something broke</h3><p>{error}</p><button type="button" className="byte-retry" onClick={() => { setError(""); setLoading(true); setRetryKey((key) => key + 1); }}>Retry</button><Link href="/messages" className="mt-4 text-[9px] uppercase tracking-[0.12em] underline">Back to messages</Link></div></main>;
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">\n      <div className="flex items-center justify-between border-y border-line py-4">
+    <main className="mobile-chat-page mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">\n      <div className="flex items-center justify-between border-y border-line py-4">
         <Link href="/messages" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"><ArrowLeft size={14}/> Messages</Link>
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">
