@@ -139,14 +139,10 @@ export default function Home() {
       return;
     }
 
-    const { error: insertError } = await supabase.from("posts").insert({
-      author_id: user.id,
-      content,
-    });
+    const { error: insertError } = await supabase.from("posts").insert({ author_id: user.id, content });
 
-    if (insertError) {
-      setError(insertError.message);
-    } else {
+    if (insertError) setError(insertError.message);
+    else {
       setCommentText((current) => ({ ...current, __post__: "" }));
       await loadFeed();
     }
@@ -173,9 +169,8 @@ export default function Home() {
       content,
     });
 
-    if (insertError) {
-      setError(insertError.message);
-    } else {
+    if (insertError) setError(insertError.message);
+    else {
       setCommentText((current) => ({ ...current, [postId]: "" }));
       await loadFeed();
     }
@@ -196,9 +191,8 @@ export default function Home() {
       .eq("id", comment.id)
       .eq("author_id", userId);
 
-    if (deleteError) {
-      setError(deleteError.message);
-    } else {
+    if (deleteError) setError(deleteError.message);
+    else {
       setComments((current) => ({
         ...current,
         [comment.post_id]: (current[comment.post_id] ?? []).filter((item) => item.id !== comment.id),
@@ -225,9 +219,8 @@ export default function Home() {
       .eq("id", post.id)
       .eq("author_id", userId);
 
-    if (deleteError) {
-      setError(deleteError.message);
-    } else {
+    if (deleteError) setError(deleteError.message);
+    else {
       setPosts((current) => current.filter((item) => item.id !== post.id));
       setComments((current) => {
         const next = { ...current };
@@ -286,23 +279,14 @@ export default function Home() {
         />
         <div className="flex items-center justify-between border-t border-line px-5 py-3">
           <span className="text-[9px] uppercase tracking-[0.14em] text-muted">{(commentText["__post__"] ?? "").length} / 5000</span>
-          <button
-            type="button"
-            onClick={createPost}
-            disabled={!(commentText["__post__"] ?? "").trim() || posting}
-            className="flex items-center gap-2 border border-fg px-4 py-2 text-[9px] uppercase tracking-[0.16em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30"
-          >
+          <button type="button" onClick={createPost} disabled={!(commentText["__post__"] ?? "").trim() || posting} className="flex items-center gap-2 border border-fg px-4 py-2 text-[9px] uppercase tracking-[0.16em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30">
             <Send size={12} strokeWidth={1.4} />
             {posting ? "Posting" : "Post"}
           </button>
         </div>
       </section>
 
-      {error && (
-        <div className="mb-6 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.1em] text-muted">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-6 border border-line px-4 py-3 text-[10px] uppercase tracking-[0.1em] text-muted">{error}</div>}
 
       {loading ? (
         <div className="py-20 text-center text-[10px] uppercase tracking-[0.18em] text-muted">Loading feed...</div>
@@ -331,14 +315,7 @@ export default function Home() {
                   </Link>
 
                   {post.author_id === userId && (
-                    <button
-                      type="button"
-                      onClick={() => deletePost(post)}
-                      disabled={deleting === post.id}
-                      aria-label="Delete post"
-                      title="Delete post"
-                      className="text-muted transition-colors hover:text-fg disabled:opacity-30"
-                    >
+                    <button type="button" onClick={() => deletePost(post)} disabled={deleting === post.id} aria-label="Delete post" title="Delete post" className="text-muted transition-colors hover:text-fg disabled:opacity-30">
                       <Trash2 size={15} strokeWidth={1.25} />
                     </button>
                   )}
@@ -369,14 +346,28 @@ export default function Home() {
                       ) : (
                         postComments.map((comment) => (
                           <div key={comment.id} className="relative flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <Link href={`/profile/${comment.author.username}`} className="text-[10px] uppercase tracking-[0.06em] hover:underline">
-                                  @{comment.author.username}
-                                </Link>
-                                <span className="text-[8px] uppercase tracking-[0.1em] text-muted">/ {formatTime(comment.created_at)}</span>
+                            <div className="flex min-w-0 items-start gap-3">
+                              <Link
+                                href={`/profile/${comment.author.username}`}
+                                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-bg text-[9px] transition-opacity hover:opacity-70"
+                                aria-label={`Open @${comment.author.username} profile`}
+                              >
+                                {comment.author.avatar_url ? (
+                                  <img src={comment.author.avatar_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  comment.author.username.slice(0, 1).toUpperCase()
+                                )}
+                              </Link>
+
+                              <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Link href={`/profile/${comment.author.username}`} className="text-[10px] uppercase tracking-[0.06em] hover:underline">
+                                    @{comment.author.username}
+                                  </Link>
+                                  <span className="text-[8px] uppercase tracking-[0.1em] text-muted">/ {formatTime(comment.created_at)}</span>
+                                </div>
+                                <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-fg/90">{comment.content}</p>
                               </div>
-                              <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-6 text-fg/90">{comment.content}</p>
                             </div>
 
                             {comment.author_id === userId && (
@@ -410,12 +401,7 @@ export default function Home() {
                         maxLength={2000}
                         className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-muted"
                       />
-                      <button
-                        type="button"
-                        onClick={() => addComment(post.id)}
-                        disabled={!(commentText[post.id] ?? "").trim() || commenting === post.id}
-                        className="flex shrink-0 items-center gap-2 border border-fg px-3 py-2 text-[9px] uppercase tracking-[0.14em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30"
-                      >
+                      <button type="button" onClick={() => addComment(post.id)} disabled={!(commentText[post.id] ?? "").trim() || commenting === post.id} className="flex shrink-0 items-center gap-2 border border-fg px-3 py-2 text-[9px] uppercase tracking-[0.14em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30">
                         <Send size={11} strokeWidth={1.4} />
                         {commenting === post.id ? "Sending" : "Send"}
                       </button>
