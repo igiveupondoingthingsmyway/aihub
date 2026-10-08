@@ -228,7 +228,10 @@ export default function ChatPage() {
       .select("id,sender_id,content,created_at")
       .single();
     if (sendError) { setError(sendError.message); return; }
-    if (data) setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+    if (data) {
+      setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+      void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }) }).catch(() => {});
+    }
   }
 
   async function deleteMessage(messageId: string) {
@@ -250,7 +253,10 @@ export default function ChatPage() {
     const supabase = createClient();
     const { data, error: sendError } = await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: me, content }).select("id,sender_id,content,created_at").single();
     if (sendError) { setText(content); setError(sendError.message); return; }
-    if (data) setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+    if (data) {
+      setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+      void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }) }).catch(() => {});
+    }
   }
 
   if (loading) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"><div className="byte-loader" role="status" aria-live="polite"><Byte state="loading" /><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;
