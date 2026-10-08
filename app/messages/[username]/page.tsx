@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
