@@ -150,7 +150,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     setRequestId(null);
     setFriendState("friends");
     setFriendCount((count) => count + 1);
-    if (profile) {\n      void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: profile.id, kind: "friend_accepted", url: "/profile/" + profile.username }) }).catch(() => {});\n    }
+    if (profile) {
+      void fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetUserId: profile.id,
+          kind: "friend_accepted",
+          url: "/profile/" + profile.username,
+        }),
+      }).catch(() => {});
+    }
     setStatus("YOU ARE NOW FRIENDS.");
   }
 
