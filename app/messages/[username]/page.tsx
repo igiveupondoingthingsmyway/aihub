@@ -113,7 +113,8 @@ export default function ChatPage({ params }: Props) {
     return () => { if (channel) createClient().removeChannel(channel); };
   }, [params, retryKey]);
 
-  useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);\n  useEffect(() => {
+  useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
     if (!conversationId || !me || !otherId) return;
     const supabase = createClient();
     const channel = supabase.channel("typing-" + conversationId, {
