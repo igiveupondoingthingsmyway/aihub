@@ -15,27 +15,15 @@ export function PushSetup() {
   const [message, setMessage] = useState("");
 
   async function enable() {
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
-    const hasNotifications = "Notification" in window;
-    const hasServiceWorker = "serviceWorker" in navigator;
-
     if (!window.isSecureContext) {
       setStatus("error");
       setMessage("Push requires HTTPS.");
       return;
     }
 
-    if (!hasNotifications) {
+    if (!("Notification" in window)) {
       setStatus("error");
-      setMessage("This browser does not support system notifications.");
-      return;
-    }
-
-    if (!hasServiceWorker) {
-      setStatus("error");
-      setMessage("This browser does not support service workers.");
+      setMessage("System notifications are unavailable in this browser.");
       return;
     }
 
