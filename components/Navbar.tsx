@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Bell, Menu, MessageSquare, Network, Orbit, UserRound, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -112,19 +111,19 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link href="/" className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em]">
+        <a href="/" className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.08em]">
           <span className="flex h-7 w-7 items-center justify-center border border-line"><Orbit size={14} strokeWidth={1.5} /></span>
           SHB
-        </Link>
+        </a>
 
         <nav className="hidden items-center gap-7 text-[11px] uppercase tracking-[0.1em] text-muted md:flex">
-          {links.map(link => <Link key={link.href} href={link.href} className="transition-colors hover:text-fg">{link.label}</Link>)}
+          {links.map(link => <a key={link.href} href={link.href} className="transition-colors hover:text-fg">{link.label}</a>)}
 
           {signedIn && (
             <>
-              <Link href="/messages" className="flex items-center gap-2 text-fg transition-colors hover:text-muted">
+              <a href="/messages" className="flex items-center gap-2 text-fg transition-colors hover:text-muted">
                 <MessageSquare size={13} /> Messages
-              </Link>
+              </a>
 
               <div className="relative">
                 <button onClick={() => setNotificationOpen(value => !value)} aria-label="Notifications" aria-expanded={notificationOpen} className="relative flex h-8 w-8 items-center justify-center text-muted transition-colors hover:text-fg">
@@ -140,40 +139,40 @@ export function Navbar() {
                     ) : (
                       <div>
                         {friendNotifications.slice(0, 4).map(notification => (
-                          <Link key={"friend-" + notification.id} href={"/profile/" + notification.sender?.username} onClick={() => setNotificationOpen(false)} className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg">
+                          <a key={"friend-" + notification.id} href={"/profile/" + notification.sender?.username} onClick={() => setNotificationOpen(false)} className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg">
                             <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">{notification.sender?.avatar_url ? <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">{notification.sender?.username?.slice(0,1) || "?"}</span>}</span>
                             <div className="min-w-0"><p className="text-[10px] uppercase tracking-[0.06em]">@{notification.sender?.username || "user"}</p><p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">Sent you a friend request</p></div>
-                          </Link>
+                          </a>
                         ))}
 
                         {messageNotifications.slice(0, 8).map(notification => {
                           const isAccepted = notification.type === "friend_accepted";
                           const username = notification.sender?.username || "user";
                           return (
-                            <Link key={"notification-" + notification.id} href={isAccepted ? "/profile/" + username : "/messages/" + username} onClick={async () => {
+                            <a key={"notification-" + notification.id} href={isAccepted ? "/profile/" + username : "/messages/" + username} onClick={async () => {
                               setNotificationOpen(false);
                               await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
                               setMessageNotifications(items => items.filter(item => item.id !== notification.id));
                             }} className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg">
                               <span className="h-8 w-8 shrink-0 overflow-hidden rounded-md border border-line">{notification.sender?.avatar_url ? <img src={notification.sender.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[8px] uppercase">{username.slice(0,1)}</span>}</span>
                               <div className="min-w-0"><p className="text-[10px] uppercase tracking-[0.06em]">@{username}</p><p className="mt-1 text-[9px] uppercase tracking-[0.08em] text-muted">{isAccepted ? "Accepted your friend request" : "Sent you a message"}</p></div>
-                            </Link>
+                            </a>
                           );
                         })}
                       </div>
                     )}
-                    <Link href="/messages" onClick={() => setNotificationOpen(false)} className="flex items-center justify-center gap-2 border-t border-line px-4 py-3 text-[9px] uppercase tracking-[0.12em] transition-colors hover:bg-fg hover:text-bg"><MessageSquare size={12}/>Open messages</Link>
+                    <a href="/messages" onClick={() => setNotificationOpen(false)} className="flex items-center justify-center gap-2 border-t border-line px-4 py-3 text-[9px] uppercase tracking-[0.12em] transition-colors hover:bg-fg hover:text-bg"><MessageSquare size={12}/>Open messages</a>
                   </div>
                 )}
               </div>
 
-              <Link href="/profile" className="flex items-center gap-2 border border-line px-4 py-2 text-fg transition-colors hover:bg-fg hover:text-bg">
+              <a href="/profile" className="flex items-center gap-2 border border-line px-4 py-2 text-fg transition-colors hover:bg-fg hover:text-bg">
                 <UserRound size={13} /> Profile
-              </Link>
+              </a>
             </>
           )}
 
-          {!signedIn && <Link href="/profile" className="flex items-center gap-2 border border-line px-4 py-2 text-fg transition-colors hover:bg-fg hover:text-bg"><UserRound size={13}/>Account</Link>}
+          {!signedIn && <a href="/profile" className="flex items-center gap-2 border border-line px-4 py-2 text-fg transition-colors hover:bg-fg hover:text-bg"><UserRound size={13}/>Account</a>}
         </nav>
 
         <button className="p-2 text-muted hover:text-fg md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(value => !value)}>
@@ -183,15 +182,15 @@ export function Navbar() {
 
       {open && (
         <nav className="border-t border-line px-5 py-4 md:hidden">
-          {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className="block py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg">{link.label}</Link>)}
+          {links.map(link => <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="block py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg">{link.label}</a>)}
           {signedIn && (
             <>
-              <Link href="/network" onClick={() => setOpen(false)} className="flex items-center gap-2 py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg"><Network size={13}/>Network</Link>
-              <Link href="/messages" onClick={() => setOpen(false)} className="flex items-center gap-2 py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg"><MessageSquare size={13}/>Messages</Link>
-              <Link href="/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 border border-line py-3 text-xs uppercase tracking-[0.1em] text-fg"><UserRound size={13}/>Profile</Link>
+              <a href="/network" onClick={() => setOpen(false)} className="flex items-center gap-2 py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg"><Network size={13}/>Network</a>
+              <a href="/messages" onClick={() => setOpen(false)} className="flex items-center gap-2 py-3 text-xs uppercase tracking-[0.1em] text-muted hover:text-fg"><MessageSquare size={13}/>Messages</a>
+              <a href="/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 border border-line py-3 text-xs uppercase tracking-[0.1em] text-fg"><UserRound size={13}/>Profile</a>
             </>
           )}
-          {!signedIn && <Link href="/profile" onClick={() => setOpen(false)} className="mt-2 flex items-center justify-center gap-2 border border-line py-3 text-xs uppercase tracking-[0.1em] text-fg"><UserRound size={13}/>Account</Link>}
+          {!signedIn && <a href="/profile" onClick={() => setOpen(false)} className="mt-2 flex items-center justify-center gap-2 border border-line py-3 text-xs uppercase tracking-[0.1em] text-fg"><UserRound size={13}/>Account</a>}
         </nav>
       )}
     </header>
