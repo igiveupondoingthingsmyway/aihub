@@ -15,9 +15,32 @@ export function PushSetup() {
   const [message, setMessage] = useState("");
 
   async function enable() {
-    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+    const hasNotifications = "Notification" in window;
+    const hasServiceWorker = "serviceWorker" in navigator;
+    const hasPush = "PushManager" in window;
+
+    if (!window.isSecureContext) {
       setStatus("error");
-      setMessage("Push is not supported on this device.");
+      setMessage("Push requires HTTPS.");
+      return;
+    }
+
+    if (!hasNotifications || !hasServiceWorker || !hasPush) {
+      setStatus("error");
+      if (!hasNotifications) {
+        setMessage("This browser does not support system notifications.");
+      } else if (!hasServiceWorker) {
+        setMessage("This browser does not support service workers.");
+      } else if (!hasPush) {
+        setMessage(
+          /iPhone|iPad|iPod/i.test(navigator.userAgent) && !isStandalone
+            ? "On iPhone/iPad, add SHB to the Home Screen and open the app from there to enable push."
+            : "This browser does not support Web Push on this device."
+        );
+      }
       return;
     }
 
@@ -25,7 +48,9 @@ export function PushSetup() {
     setMessage("");
 
     try {
-      const permission = await Notification.requestPermission();
+      const permission = Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
       if (permission !== "granted") throw new Error("Notification permission was not granted.");
 
       const keyResponse = await fetch("/api/push/public-key", { cache: "no-store" });
