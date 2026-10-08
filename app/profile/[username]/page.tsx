@@ -130,6 +130,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     const request = Array.isArray(data) ? data[0] : data;
     setRequestId(request.id);
     setFriendState("sent");
+    void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: profile.id, kind: "friend", url: "/profile/" + profile.username }) }).catch(() => {});
     setStatus("REQUEST SENT.");
   }
 
@@ -149,6 +150,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     setRequestId(null);
     setFriendState("friends");
     setFriendCount((count) => count + 1);
+    void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: profile.id, kind: "friend_accepted", url: "/profile/" + profile.username }) }).catch(() => {});
     setStatus("YOU ARE NOW FRIENDS.");
   }
 
