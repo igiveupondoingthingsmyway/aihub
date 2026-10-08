@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Byte } from "@/components/Byte";
 
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 type Conversation = { id: string; user_one: string; user_two: string; other?: Profile };
@@ -53,7 +54,7 @@ export default function MessagesPage() {
   }, []);
 
   if (loading) {
-    return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8"><div className="byte-loader" role="status" aria-live="polite"><svg className="byte-svg" viewBox="270 85 210 150" aria-hidden="true" focusable="false"><line className="byte-ground" x1="285" y1="224" x2="395" y2="224"/><g className="byte-bob"><rect className="byte-leg byte-leg-a" x="344" y="210" width="10" height="14"/><rect className="byte-leg byte-leg-b" x="372" y="210" width="10" height="14"/><line className="byte-antenna-line" x1="340" y1="120" x2="340" y2="102"/><rect className="byte-antenna" x="335" y="92" width="10" height="10"/><rect className="byte-body" x="290" y="120" width="100" height="90"/><path className="byte-body" d="M306 210 L306 232 L330 210"/><line className="byte-seam" x1="307" y1="210" x2="329" y2="210"/><g className="byte-eyes"><rect x="314" y="152" width="14" height="14"/><rect x="352" y="152" width="14" height="14"/></g><rect className="byte-cursor" x="328" y="186" width="24" height="4"/></g><rect className="byte-bubble" x="408" y="104" width="68" height="30"/><rect className="byte-dot" x="420" y="115" width="8" height="8"/><rect className="byte-dot byte-dot-2" x="438" y="115" width="8" height="8"/><rect className="byte-dot byte-dot-3" x="456" y="115" width="8" height="8"/></svg><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;
+    return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8"><div className="byte-loader" role="status" aria-live="polite"><Byte state="loading" /><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;;
   }
 
   return (
