@@ -2,12 +2,32 @@
 
 import Link from "next/link";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { ArrowLeft, MoreHorizontal, Send, UserRound, Users } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Send, UserRound, Users, Sticker, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
 
 type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
+type StickerId = "wow" | "lol" | "love" | "dead" | "fire" | "sus" | "cry" | "angry" | "cool" | "hmm" | "byte" | "gg";
+const STICKERS: Array<{ id: StickerId; label: string; symbol: string }> = [
+  { id: "wow", label: "WOW", symbol: "◉‿◉" },
+  { id: "lol", label: "LOL", symbol: "≧▽≦" },
+  { id: "love", label: "LOVE", symbol: "♥‿♥" },
+  { id: "dead", label: "DEAD", symbol: "×‿×" },
+  { id: "fire", label: "FIRE", symbol: "ϟ" },
+  { id: "sus", label: "SUS", symbol: "ಠ_ಠ" },
+  { id: "cry", label: "CRY", symbol: "╥﹏╥" },
+  { id: "angry", label: "ANGRY", symbol: "ಠ╭╮ಠ" },
+  { id: "cool", label: "COOL", symbol: "⌐■_■" },
+  { id: "hmm", label: "HMM", symbol: "¬_¬" },
+  { id: "byte", label: "BYTE", symbol: "▣_▣" },
+  { id: "gg", label: "GG", symbol: "★_★" },
+];
+const stickerContent = (id: StickerId) => "[[sticker:" + id + "]]";
+const getSticker = (content: string) => {
+  const match = content.match(/^\[\[sticker:(wow|lol|love|dead|fire|sus|cry|angry|cool|hmm|byte|gg)\]\]$/);
+  return match ? STICKERS.find((sticker) => sticker.id === match[1]) ?? null : null;
+};
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 
 export default function ChatPage({ params }: Props) {
@@ -26,6 +46,8 @@ export default function ChatPage({ params }: Props) {
   const typingChannel = useRef<any>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [otherTyping, setOtherTyping] = useState(false);
+  const [stickerOpen, setStickerOpen] = useState(false);
+  const [recentStickers, setRecentStickers] = useState<StickerId[]>([]);
 
   useEffect(() => {
     let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
@@ -114,6 +136,22 @@ export default function ChatPage({ params }: Props) {
   }, [params, retryKey]);
 
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("shb-recent-stickers") || "[]");
+      if (Array.isArray(saved)) setRecentStickers(saved.filter((id): id is StickerId => STICKERS.some((sticker) => sticker.id === id)).slice(0, 8));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!stickerOpen) return;
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setStickerOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [stickerOpen]);
   useEffect(() => {
     if (!conversationId || !me || !otherId) return;
     const supabase = createClient();
@@ -176,6 +214,23 @@ export default function ChatPage({ params }: Props) {
     }
   }
 
+  async function sendSticker(id: StickerId) {
+    if (!conversationId || !me) return;
+    stopTyping();
+    setStickerOpen(false);
+    const nextRecent = [id, ...recentStickers.filter((item) => item !== id)].slice(0, 8);
+    setRecentStickers(nextRecent);
+    try { localStorage.setItem("shb-recent-stickers", JSON.stringify(nextRecent)); } catch {}
+    const supabase = createClient();
+    const { data, error: sendError } = await supabase
+      .from("messages")
+      .insert({ conversation_id: conversationId, sender_id: me, content: stickerContent(id) })
+      .select("id,sender_id,content,created_at")
+      .single();
+    if (sendError) { setError(sendError.message); return; }
+    if (data) setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+  }
+
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     const content = text.trim();
@@ -214,16 +269,24 @@ export default function ChatPage({ params }: Props) {
           <div className="byte-state min-h-[55vh]"><Byte state="idle" /><h3>No messages yet</h3><p>Say hi to @{username}.</p></div>
         ) : (
           <div className="space-y-3 py-6">
-            {messages.map((message) => (
+            {messages.map((message) => {
+              const sticker = getSticker(message.content);
+              return (
               <div key={message.id} className={"flex " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                 <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
-                  <div>{message.content}</div>
+                  {sticker ? (
+                    <div className="flex flex-col items-center py-1" aria-label={sticker.label + " sticker"}>
+                      <div className="flex h-24 w-24 items-center justify-center border border-line bg-bg text-xl tracking-[-0.12em]">{sticker.symbol}</div>
+                      <span className="mt-2 text-[7px] uppercase tracking-[0.18em] opacity-50">{sticker.label}</span>
+                    </div>
+                  ) : <div>{message.content}</div>}
                   <div className={"mt-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
                     {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
             <div ref={bottom}/>
           </div>
         )}
@@ -270,7 +333,40 @@ export default function ChatPage({ params }: Props) {
       </div>
 
       {otherTyping && <div className="byte-inline mb-2" role="status" aria-live="polite"><Byte state="typing" className="!w-[56px]" /><span>@{username} is typing</span></div>}
-      <form onSubmit={sendMessage} className="mt-4 flex gap-2">
+      <div className="relative mt-4">
+        {stickerOpen && (
+          <section className="absolute bottom-[calc(100%+8px)] left-0 z-20 w-full border border-line bg-bg p-4 shadow-2xl" aria-label="Stickers">
+            <div className="mb-4 flex items-center justify-between border-b border-line pb-3">
+              <span className="text-[9px] uppercase tracking-[0.16em]">Stickers / Байт</span>
+              <button type="button" onClick={() => setStickerOpen(false)} className="text-muted hover:text-fg" aria-label="Close stickers"><X size={14} strokeWidth={1.25}/></button>
+            </div>
+            {recentStickers.length > 0 && (
+              <div className="mb-4">
+                <div className="mb-2 text-[8px] uppercase tracking-[0.16em] text-muted">Recent</div>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                  {recentStickers.map((id) => {
+                    const sticker = STICKERS.find((item) => item.id === id)!;
+                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line text-sm tracking-[-0.12em] hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}>{sticker.symbol}</button>;
+                  })}
+                </div>
+              </div>
+            )}
+            <div className="mb-2 text-[8px] uppercase tracking-[0.16em] text-muted">All</div>
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+              {STICKERS.map((sticker) => (
+                <button key={sticker.id} type="button" onClick={() => void sendSticker(sticker.id)} className="flex aspect-square flex-col items-center justify-center gap-1 border border-line hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}>
+                  <span className="text-base tracking-[-0.12em]">{sticker.symbol}</span>
+                  <span className="text-[6px] uppercase tracking-[0.14em] opacity-50">{sticker.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 text-right text-[7px] uppercase tracking-[0.14em] text-muted">Esc to close</div>
+          </section>
+        )}
+        <form onSubmit={sendMessage} className="flex gap-2">
+        <button type="button" onClick={() => setStickerOpen((open) => !open)} aria-expanded={stickerOpen} aria-controls="sticker-panel" aria-label="Stickers" className={"flex h-12 w-12 shrink-0 items-center justify-center border border-line " + (stickerOpen ? "bg-fg text-bg" : "text-fg hover:bg-fg hover:text-bg")}>
+          <Sticker size={16} strokeWidth={1.25}/>
+        </button>
         <input value={text} onChange={(e) => { setText(e.target.value.slice(0, 4000)); publishTyping(); }} onBlur={stopTyping} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
         <button disabled={!text.trim()} className="flex h-12 w-12 shrink-0 items-center justify-center bg-fg text-bg disabled:opacity-40" aria-label="Send message"><Send size={15}/></button>
       </form>
