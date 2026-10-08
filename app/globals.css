@@ -232,3 +232,14 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-chat-page form button{height:46px!important;width:46px!important}
 .mobile-chat-page .sticker-msg{max-width:100%}
 }
+
+.mobile-tools-page{padding-top:56px;padding-bottom:72px}
+.mobile-tools-page .mobile-page-title{margin-bottom:10px}
+.mobile-tools-page .mobile-page-title p{margin-top:8px;font-size:9px;color:var(--muted);letter-spacing:.14em}
+.mobile-tools-page>div:last-child{padding:0 16px 40px!important;max-width:none!important}
+.mobile-tools-page>div:last-child>div:first-child{border-block:1px solid var(--line)}
+.mobile-tools-page .no-scrollbar{margin-inline:0!important;padding-inline:0!important}
+.mobile-tools-page .no-scrollbar button{font-size:8px}
+.mobile-tools-page section{margin-top:32px!important}
+.mobile-tools-page section>div.grid{grid-template-columns:1fr!important}
+.mobile-tools-page .grid{display:grid}
