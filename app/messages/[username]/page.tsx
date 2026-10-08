@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Byte } from "@/components/Byte";
 
 type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
@@ -20,6 +21,7 @@ export default function ChatPage({ params }: Props) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function ChatPage({ params }: Props) {
     }
     load();
     return () => { if (channel) createClient().removeChannel(channel); };
-  }, [params]);
+  }, [params, retryKey]);
 
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
@@ -130,8 +132,8 @@ export default function ChatPage({ params }: Props) {
     if (data) setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
   }
 
-  if (loading) return <main className="mx-auto max-w-6xl px-5 py-24 text-xs uppercase tracking-[0.12em] text-muted sm:px-8">Loading...</main>;
-  if (error) return <main className="mx-auto max-w-6xl px-5 py-24 sm:px-8"><p className="text-sm">{error}</p><Link href="/messages" className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.1em] underline">Back to messages</Link></main>;
+  if (loading) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"><div className="byte-loader" role="status" aria-live="polite"><Byte state="loading" /><p className="byte-label">Loading<i>.</i><i>.</i><i>.</i></p><div className="byte-bar" aria-hidden="true"><i></i></div></div></main>;
+  if (error) return <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16"><div className="byte-state" role="alert"><Byte state="error" /><h3>Something broke</h3><p>{error}</p><button type="button" className="byte-retry" onClick={() => { setError(""); setLoading(true); setRetryKey((key) => key + 1); }}>Retry</button><Link href="/messages" className="mt-4 text-[9px] uppercase tracking-[0.12em] underline">Back to messages</Link></div></main>;
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
@@ -154,9 +156,7 @@ export default function ChatPage({ params }: Props) {
       <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-[1fr_280px]">
         <section className="min-h-[55vh] border-b border-line">
         {messages.length === 0 ? (
-          <div className="flex min-h-[55vh] items-center justify-center text-center">
-            <div><p className="text-xs uppercase tracking-[0.12em]">Start the conversation.</p><p className="mt-2 text-[10px] text-muted">Send the first message to @{username}.</p></div>
-          </div>
+          <div className="byte-state min-h-[55vh]"><Byte state="idle" /><h3>No messages yet</h3><p>Say hi to @{username}.</p></div>
         ) : (
           <div className="space-y-3 py-6">
             {messages.map((message) => (
