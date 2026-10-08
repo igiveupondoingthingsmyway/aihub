@@ -20,7 +20,6 @@ export function PushSetup() {
       ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
     const hasNotifications = "Notification" in window;
     const hasServiceWorker = "serviceWorker" in navigator;
-    const hasPush = "PushManager" in window;
 
     if (!window.isSecureContext) {
       setStatus("error");
@@ -28,19 +27,15 @@ export function PushSetup() {
       return;
     }
 
-    if (!hasNotifications || !hasServiceWorker || !hasPush) {
+    if (!hasNotifications) {
       setStatus("error");
-      if (!hasNotifications) {
-        setMessage("This browser does not support system notifications.");
-      } else if (!hasServiceWorker) {
-        setMessage("This browser does not support service workers.");
-      } else if (!hasPush) {
-        setMessage(
-          /iPhone|iPad|iPod/i.test(navigator.userAgent) && !isStandalone
-            ? "On iPhone/iPad, add SHB to the Home Screen and open the app from there to enable push."
-            : "This browser does not support Web Push on this device."
-        );
-      }
+      setMessage("This browser does not support system notifications.");
+      return;
+    }
+
+    if (!hasServiceWorker) {
+      setStatus("error");
+      setMessage("This browser does not support service workers.");
       return;
     }
 
@@ -59,6 +54,15 @@ export function PushSetup() {
       if (!publicKey) throw new Error("Push notifications are not configured yet.");
 
       const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+
+      if (!registration.pushManager) {
+        throw new Error(
+          /iPhone|iPad|iPod/i.test(navigator.userAgent) && !isStandalone
+            ? "On iPhone/iPad, add SHB to the Home Screen and open the app from there to enable push."
+            : "Web Push is unavailable in this browser context."
+        );
+      }
+
       const existing = await registration.pushManager.getSubscription();
       const subscription = existing || await registration.pushManager.subscribe({
         userVisibleOnly: true,
