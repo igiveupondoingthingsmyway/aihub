@@ -25,54 +25,84 @@ export default function ChatPage({ params }: Props) {
   useEffect(() => {
     let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
     async function load() {
-      const { username: rawUsername } = await params;
-      const target = decodeURIComponent(rawUsername).toLowerCase();
-      setUsername(target);
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = "/login"; return; }
-      setMe(user.id);
+      try {
+        const { username: rawUsername } = await params;
+        const target = decodeURIComponent(rawUsername).toLowerCase();
+        setUsername(target);
+        setError("");
 
-      const { data: profile } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").eq("username", target).maybeSingle();
-      if (!profile) { setError("User not found."); setLoading(false); return; }
-      setOtherId(profile.id);
+        const supabase = createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        if (!user) {
+          window.location.href = "/login";
+          return;
+        }
+        setMe(user.id);
 
-      if (profile.avatar_url) {
-        const isExternalUrl = profile.avatar_url.startsWith("http://") || profile.avatar_url.startsWith("https://");
-        if (isExternalUrl) {
-          const marker = "/storage/v1/object/public/profile-media/";
-          const markerIndex = profile.avatar_url.indexOf(marker);
-          if (markerIndex !== -1) {
-            const storagePath = decodeURIComponent(profile.avatar_url.slice(markerIndex + marker.length));
-            const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(storagePath, 60 * 60);
-            setAvatarSrc(signed?.signedUrl || profile.avatar_url);
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id,username,bio,avatar_url,last_seen")
+          .eq("username", target)
+          .maybeSingle();
+        if (profileError) throw profileError;
+        if (!profile) {
+          setError("User not found.");
+          return;
+        }
+        setOtherId(profile.id);
+
+        if (profile.avatar_url) {
+          const isExternalUrl = profile.avatar_url.startsWith("http://") || profile.avatar_url.startsWith("https://");
+          if (isExternalUrl) {
+            const marker = "/storage/v1/object/public/profile-media/";
+            const markerIndex = profile.avatar_url.indexOf(marker);
+            if (markerIndex !== -1) {
+              const storagePath = decodeURIComponent(profile.avatar_url.slice(markerIndex + marker.length));
+              const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(storagePath, 60 * 60);
+              setAvatarSrc(signed?.signedUrl || profile.avatar_url);
+            } else {
+              setAvatarSrc(profile.avatar_url);
+            }
           } else {
-            setAvatarSrc(profile.avatar_url);
+            const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(profile.avatar_url, 60 * 60);
+            setAvatarSrc(signed?.signedUrl || "");
           }
         } else {
-          const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(profile.avatar_url, 60 * 60);
-          setAvatarSrc(signed?.signedUrl || "");
+          setAvatarSrc("");
         }
-      } else {
-        setAvatarSrc("");
+
+        const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
+        if (rpcError) throw rpcError;
+        if (!conversation) throw new Error("Unable to open conversation.");
+        setConversationId(conversation);
+
+        const { error: notificationError } = await supabase.rpc("mark_conversation_notifications_read", { target_conversation: conversation });
+        if (notificationError) {
+          console.warn("Could not mark chat notifications as read:", notificationError.message);
+        }
+
+        const { data, error: messagesError } = await supabase
+          .from("messages")
+          .select("id,sender_id,content,created_at")
+          .eq("conversation_id", conversation)
+          .order("created_at", { ascending: true });
+        if (messagesError) throw messagesError;
+        setMessages(data ?? []);
+
+        channel = supabase.channel("chat-" + conversation)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "conversation_id=eq." + conversation }, (payload) => {
+            const incoming = payload.new as Message;
+            setMessages((current) => current.some((m) => m.id === incoming.id) ? current : [...current, incoming]);
+          })
+          .subscribe();
+      } catch (loadError) {
+        const message = loadError instanceof Error ? loadError.message : "Unable to load chat.";
+        console.error("Chat load failed:", loadError);
+        setError(message);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
-      if (rpcError || !conversation) { setError(rpcError?.message ?? "Unable to open conversation."); setLoading(false); return; }
-      setConversationId(conversation);
-
-      await supabase.rpc("mark_conversation_notifications_read", { target_conversation: conversation });
-
-      const { data } = await supabase.from("messages").select("id,sender_id,content,created_at").eq("conversation_id", conversation).order("created_at", { ascending: true });
-      setMessages(data ?? []);
-
-      channel = supabase.channel("chat-" + conversation)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "conversation_id=eq." + conversation }, (payload) => {
-          const incoming = payload.new as Message;
-          setMessages((current) => current.some((m) => m.id === incoming.id) ? current : [...current, incoming]);
-        })
-        .subscribe();
-      setLoading(false);
     }
     load();
     return () => { if (channel) createClient().removeChannel(channel); };
