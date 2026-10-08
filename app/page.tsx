@@ -172,6 +172,10 @@ export default function Home() {
     if (insertError) setError(insertError.message);
     else {
       setCommentText((current) => ({ ...current, [postId]: "" }));
+      const targetUserId = posts.find((post) => post.id === postId)?.author_id;
+      if (targetUserId && targetUserId !== user.id) {
+        void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId, kind: "post_comment", url: "/" }) }).catch(() => {});
+      }
       await loadFeed();
     }
 
@@ -244,6 +248,8 @@ export default function Home() {
       if (likeError && likeError.code !== "23505") {
         setError(likeError.message);
         await loadFeed();
+      } else if (!likeError && post.author_id !== userId) {
+        void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: post.author_id, kind: "post_like", url: "/" }) }).catch(() => {});
       }
     } else {
       const { error: unlikeError } = await supabase.from("post_likes").delete().eq("post_id", post.id).eq("user_id", userId);
