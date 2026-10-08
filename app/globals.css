@@ -179,3 +179,14 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-comment-input input { min-width:0; flex:1; background:transparent; border:0; outline:0; font:400 10px var(--font-yzy); color:var(--fg); }
 .mobile-comment-input button { width:32px; display:flex; align-items:center; justify-content:center; }
 @keyframes mobile-dots { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+.mobile-network-search { display:flex; align-items:center; gap:10px; margin:16px; padding:0 12px; height:44px; border:1px solid var(--line); color:var(--muted); }
+.mobile-network-search input { min-width:0; flex:1; border:0; outline:0; background:transparent; color:var(--fg); font:400 10px var(--font-yzy); text-transform:uppercase; letter-spacing:.08em; }
+.mobile-search-results { margin:0 16px 16px; border:1px solid var(--line); }
+.mobile-person,.mobile-row { display:flex; align-items:center; gap:10px; min-height:60px; padding:10px 12px; border-bottom:1px solid var(--line); }
+.mobile-person:last-child,.mobile-row:last-child { border-bottom:0; }
+.mobile-person .mobile-user,.mobile-row .mobile-user { flex:1; }
+.mobile-person > button,.mobile-icon { display:flex; align-items:center; justify-content:center; width:34px; height:34px; color:var(--muted); }
+.mobile-person > button:hover,.mobile-icon:hover { color:var(--fg); }
+.mobile-network-tabs { margin-top:4px; }
+.mobile-list { margin:0 16px; border-top:1px solid var(--line); }
