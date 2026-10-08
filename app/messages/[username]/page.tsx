@@ -367,9 +367,10 @@ export default function ChatPage({ params }: Props) {
         <button type="button" onClick={() => setStickerOpen((open) => !open)} aria-expanded={stickerOpen} aria-controls="sticker-panel" aria-label="Stickers" className={"flex h-12 w-12 shrink-0 items-center justify-center border border-line " + (stickerOpen ? "bg-fg text-bg" : "text-fg hover:bg-fg hover:text-bg")}>
           <Sticker size={16} strokeWidth={1.25}/>
         </button>
-        <input value={text} onChange={(e) => { setText(e.target.value.slice(0, 4000)); publishTyping(); }} onBlur={stopTyping} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
+          <input value={text} onChange={(e) => { setText(e.target.value.slice(0, 4000)); publishTyping(); }} onBlur={stopTyping} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
         <button disabled={!text.trim()} className="flex h-12 w-12 shrink-0 items-center justify-center bg-fg text-bg disabled:opacity-40" aria-label="Send message"><Send size={15}/></button>
-      </form>
+        </form>
+      </div>
     </main>
   );
 }
