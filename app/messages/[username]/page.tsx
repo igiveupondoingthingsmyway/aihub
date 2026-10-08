@@ -89,7 +89,7 @@ export default function ChatPage({ params }: Props) {
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              <img src={profile.avatar_url} alt={"@" + username + " avatar"} className="h-full w-full object-cover" />
             ) : (
               <span className="text-[9px] uppercase">{username.slice(0, 1)}</span>
             )}
@@ -100,7 +100,7 @@ export default function ChatPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-[1fr_280px]">
         <section className="min-h-[55vh] border-b border-line">
         {messages.length === 0 ? (
           <div className="flex min-h-[55vh] items-center justify-center text-center">
@@ -123,14 +123,14 @@ export default function ChatPage({ params }: Props) {
         )}
         </section>
 
-        <aside className="h-fit border border-line lg:sticky lg:top-24">
+        <aside className="min-h-[55vh] h-full border border-line lg:sticky lg:top-24">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <span className="text-[9px] uppercase tracking-[0.16em]">Profile</span>
             <Users size={14} strokeWidth={1.2} />
           </div>
 
           <div className="px-5 py-6">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-md border border-line">
+            <div className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-bg">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
