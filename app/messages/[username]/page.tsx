@@ -124,14 +124,19 @@ export default function ChatPage({ params }: Props) {
 
     const updateTyping = () => {
       const presence = channel.presenceState() as Record<string, Array<{ typing?: boolean }>>;
-      setOtherTyping(Boolean(presence[otherId]?.some((entry) => entry.typing)));
+      const otherPresence = presence[otherId] ?? [];
+      setOtherTyping(otherPresence.some((entry) => entry?.typing === true));
     };
 
     channel.on("presence", { event: "sync" }, updateTyping);
     channel.on("presence", { event: "join" }, updateTyping);
     channel.on("presence", { event: "leave" }, updateTyping);
+
     channel.subscribe(async (status) => {
-      if (status === "SUBSCRIBED") await channel.track({ typing: false });
+      if (status === "SUBSCRIBED") {
+        await channel.track({ typing: false });
+        updateTyping();
+      }
     });
 
     return () => {
