@@ -23,6 +23,9 @@ export default function ChatPage({ params }: Props) {
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const bottom = useRef<HTMLDivElement>(null);
+  const typingChannel = useRef<any>(null);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [otherTyping, setOtherTyping] = useState(false);
 
   useEffect(() => {
     let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
@@ -110,7 +113,53 @@ export default function ChatPage({ params }: Props) {
     return () => { if (channel) createClient().removeChannel(channel); };
   }, [params, retryKey]);
 
-  useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);\n  useEffect(() => {
+    if (!conversationId || !me || !otherId) return;
+    const supabase = createClient();
+    const channel = supabase.channel("typing-" + conversationId, {
+      config: { presence: { key: me } },
+    });
+    typingChannel.current = channel;
+
+    const updateTyping = () => {
+      const presence = channel.presenceState() as Record<string, Array<{ typing?: boolean }>>;
+      setOtherTyping(Boolean(presence[otherId]?.some((entry) => entry.typing)));
+    };
+
+    channel.on("presence", { event: "sync" }, updateTyping);
+    channel.on("presence", { event: "join" }, updateTyping);
+    channel.on("presence", { event: "leave" }, updateTyping);
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") await channel.track({ typing: false });
+    });
+
+    return () => {
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      typingTimer.current = null;
+      setOtherTyping(false);
+      void supabase.removeChannel(channel);
+      typingChannel.current = null;
+    };
+  }, [conversationId, me, otherId]);
+
+  const publishTyping = () => {
+    const channel = typingChannel.current;
+    if (!channel) return;
+    void channel.track({ typing: true });
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => {
+      void channel.track({ typing: false });
+    }, 1800);
+  };
+
+  const stopTyping = () => {
+    const channel = typingChannel.current;
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = null;
+    if (channel) void channel.track({ typing: false });
+  };
+
+
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -214,8 +263,9 @@ export default function ChatPage({ params }: Props) {
         </aside>
       </div>
 
+      {otherTyping && <div className="byte-inline mb-2" role="status" aria-live="polite"><Byte state="typing" className="!w-[56px]" /><span>@{username} is typing</span></div>}
       <form onSubmit={sendMessage} className="mt-4 flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value.slice(0, 4000))} onKeyDown={handleKeyDown} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
+        <input value={text} onChange={(e) => { setText(e.target.value.slice(0, 4000)); publishTyping(); }} onBlur={stopTyping} placeholder="WRITE A MESSAGE..." className="h-12 min-w-0 flex-1 border border-line bg-transparent px-4 text-xs uppercase tracking-[0.06em] focus:border-fg focus:outline-none"/>
         <button disabled={!text.trim()} className="flex h-12 w-12 shrink-0 items-center justify-center bg-fg text-bg disabled:opacity-40" aria-label="Send message"><Send size={15}/></button>
       </form>
     </main>
