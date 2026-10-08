@@ -14,6 +14,7 @@ export default function ChatPage({ params }: Props) {
   const [me, setMe] = useState("");
   const [otherId, setOtherId] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [avatarSrc, setAvatarSrc] = useState("");
   const [conversationId, setConversationId] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
@@ -35,6 +36,26 @@ export default function ChatPage({ params }: Props) {
       const { data: profile } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").eq("username", target).maybeSingle();
       if (!profile) { setError("User not found."); setLoading(false); return; }
       setOtherId(profile.id);
+
+      if (profile.avatar_url) {
+        const isExternalUrl = /^https?:\\/\\//i.test(profile.avatar_url);
+        if (isExternalUrl) {
+          const marker = "/storage/v1/object/public/profile-media/";
+          const markerIndex = profile.avatar_url.indexOf(marker);
+          if (markerIndex !== -1) {
+            const storagePath = decodeURIComponent(profile.avatar_url.slice(markerIndex + marker.length));
+            const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(storagePath, 60 * 60);
+            setAvatarSrc(signed?.signedUrl || profile.avatar_url);
+          } else {
+            setAvatarSrc(profile.avatar_url);
+          }
+        } else {
+          const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(profile.avatar_url, 60 * 60);
+          setAvatarSrc(signed?.signedUrl || "");
+        }
+      } else {
+        setAvatarSrc("");
+      }
 
       const { data: conversation, error: rpcError } = await supabase.rpc("get_or_create_conversation", { other_user: profile.id });
       if (rpcError || !conversation) { setError(rpcError?.message ?? "Unable to open conversation."); setLoading(false); return; }
@@ -88,8 +109,8 @@ export default function ChatPage({ params }: Props) {
         <Link href="/messages" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"><ArrowLeft size={14}/> Messages</Link>
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-md border border-line">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={"@" + username + " avatar"} className="h-full w-full object-cover" />
+            {avatarSrc ? (
+              <img src={avatarSrc} alt={"@" + username + " avatar"} className="h-full w-full object-cover" />
             ) : (
               <span className="text-[9px] uppercase">{username.slice(0, 1)}</span>
             )}
@@ -131,8 +152,8 @@ export default function ChatPage({ params }: Props) {
 
           <div className="px-5 py-6">
             <div className="mx-auto flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-bg">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              {avatarSrc ? (
+                <img src={avatarSrc} alt={"@" + username + " avatar"} className="h-full w-full object-cover" />
               ) : (
                 <span className="text-2xl uppercase">{username.slice(0, 1)}</span>
               )}
