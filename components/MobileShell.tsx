@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Home, MessageSquare, Network, Plus, UserRound, X, Send } from "lucide-react";
+import { Home, MessageSquare, Network, Plus, UserRound, X, Send } from "lucide-react";
+import { MobileFeed } from "@/components/MobileFeed";
 import { usePathname } from "next/navigation";
 import { FormEvent, ReactNode, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -51,7 +52,7 @@ export function MobileShell({ children }: { children: ReactNode }) {
         </Link>
       </header>
 
-      <div className="mobile-content">{children}</div>
+      <div className="mobile-content">{pathname === "/" ? <MobileFeed /> : children}</div>
 
       <nav className="mobile-nav" aria-label="Mobile navigation">
         <Link href="/" className={active === "feed" ? "active" : ""} aria-label="Feed">
