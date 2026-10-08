@@ -7,6 +7,7 @@ import { MobileNetwork } from "@/components/MobileNetwork";
 import { MobileMessages } from "@/components/MobileMessages";
 import { MobileProfile } from "@/components/MobileProfile";
 import { MobileAITools } from "@/components/MobileAITools";
+import { MobileNotifications } from "@/components/MobileNotifications";
 import { usePathname } from "next/navigation";
 import { FormEvent, ReactNode, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
