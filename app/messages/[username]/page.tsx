@@ -121,8 +121,6 @@ export default function ChatPage({ params }: Props) {
             <div ref={bottom}/>
           </div>
         )}
-      </div>
-
         </section>
 
         <aside className="h-fit border border-line lg:sticky lg:top-24">
