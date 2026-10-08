@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle, Send, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -40,6 +40,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [deleting, setDeleting] = useState("");
   const [error, setError] = useState("");
 
   const loadFeed = useCallback(async () => {
@@ -124,6 +125,28 @@ export default function Home() {
     setPosting(false);
   }
 
+  async function deletePost(post: Post) {
+    if (deleting) return;
+    if (!window.confirm("Delete this post?")) return;
+
+    setDeleting(post.id);
+    setError("");
+
+    const { error: deleteError } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", post.id)
+      .eq("author_id", userId);
+
+    if (deleteError) {
+      setError(deleteError.message);
+    } else {
+      setPosts((current) => current.filter((item) => item.id !== post.id));
+    }
+
+    setDeleting("");
+  }
+
   async function toggleLike(post: Post) {
     const nextLiked = !post.liked;
     setPosts((current) => current.map((item) => item.id === post.id
@@ -196,7 +219,7 @@ export default function Home() {
         <div className="divide-y divide-line">
           {posts.map((post) => (
             <article key={post.id} className="py-7 first:pt-0">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <Link href={`/profile/${post.author.username}`} className="flex min-w-0 items-center gap-3">
                   {post.author.avatar_url ? (
                     <img src={post.author.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover" />
@@ -204,8 +227,21 @@ export default function Home() {
                     <div className="flex h-9 w-9 items-center justify-center border border-line text-[10px]">{post.author.username.slice(0, 1).toUpperCase()}</div>
                   )}
                   <span className="text-xs uppercase tracking-[0.06em]">@{post.author.username}</span>
+                  <span className="text-[9px] uppercase tracking-[0.12em] text-muted">/ {formatTime(post.created_at)}</span>
                 </Link>
-                <span className="text-[9px] uppercase tracking-[0.12em] text-muted">/ {formatTime(post.created_at)}</span>
+
+                {post.author_id === userId && (
+                  <button
+                    type="button"
+                    onClick={() => deletePost(post)}
+                    disabled={deleting === post.id}
+                    aria-label="Delete post"
+                    title="Delete post"
+                    className="text-muted transition-colors hover:text-fg disabled:opacity-30"
+                  >
+                    <Trash2 size={15} strokeWidth={1.25} />
+                  </button>
+                )}
               </div>
 
               <p className="mt-5 whitespace-pre-wrap break-words text-sm leading-7">{post.content}</p>
