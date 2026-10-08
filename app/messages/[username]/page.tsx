@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { ArrowLeft, MoreHorizontal, Send, UserRound } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Send, UserRound, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
-type Profile = { id: string; username: string; avatar_url: string };
+type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 
 export default function ChatPage({ params }: Props) {
   const [username, setUsername] = useState("");
@@ -32,7 +32,7 @@ export default function ChatPage({ params }: Props) {
       if (!user) { window.location.href = "/login"; return; }
       setMe(user.id);
 
-      const { data: profile } = await supabase.from("profiles").select("id,username,avatar_url").eq("username", target).maybeSingle();
+      const { data: profile } = await supabase.from("profiles").select("id,username,bio,avatar_url,last_seen").eq("username", target).maybeSingle();
       if (!profile) { setError("User not found."); setLoading(false); return; }
       setOtherId(profile.id);
 
@@ -83,7 +83,7 @@ export default function ChatPage({ params }: Props) {
   if (error) return <main className="mx-auto max-w-6xl max-w-6xl px-5 py-24 sm:px-8"><p className="text-sm">{error}</p><Link href="/messages" className="mt-6 inline-flex items-center gap-2 text-xs uppercase tracking-[0.1em] underline">Back to messages</Link></main>;
 
   return (
-    <main className="mx-auto max-w-4xl px-5 py-10 sm:px-8 sm:py-16">
+    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-16">
       <div className="flex items-center justify-between border-y border-line py-4">
         <Link href="/messages" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"><ArrowLeft size={14}/> Messages</Link>
         <div className="flex items-center gap-3">
@@ -100,7 +100,8 @@ export default function ChatPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 min-h-[55vh] border-b border-line">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
+        <section className="min-h-[55vh] border-b border-line">
         {messages.length === 0 ? (
           <div className="flex min-h-[55vh] items-center justify-center text-center">
             <div><p className="text-xs uppercase tracking-[0.12em]">Start the conversation.</p><p className="mt-2 text-[10px] text-muted">Send the first message to @{username}.</p></div>
@@ -120,6 +121,48 @@ export default function ChatPage({ params }: Props) {
             <div ref={bottom}/>
           </div>
         )}
+      </div>
+
+        </section>
+
+        <aside className="h-fit border border-line lg:sticky lg:top-24">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            <span className="text-[9px] uppercase tracking-[0.16em]">Profile</span>
+            <Users size={14} strokeWidth={1.2} />
+          </div>
+
+          <div className="px-5 py-6">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-md border border-line">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl uppercase">{username.slice(0, 1)}</span>
+              )}
+            </div>
+
+            <div className="mt-5 text-center">
+              <p className="text-sm">@{username}</p>
+              <p className="mt-2 text-[9px] uppercase tracking-[0.12em] text-muted">
+                Active on SHB
+              </p>
+            </div>
+
+            <div className="mt-6 border-y border-line py-4">
+              <p className="text-[9px] uppercase tracking-[0.14em] text-muted">Bio</p>
+              <p className="mt-2 text-xs leading-5">
+                {profile?.bio || "No bio yet."}
+              </p>
+            </div>
+
+            <Link
+              href={"/profile/" + username}
+              className="mt-4 flex items-center justify-center gap-2 border border-line px-4 py-3 text-[9px] uppercase tracking-[0.12em] transition-colors hover:bg-fg hover:text-bg"
+            >
+              <UserRound size={13} strokeWidth={1.25} />
+              Open profile
+            </Link>
+          </div>
+        </aside>
       </div>
 
       <form onSubmit={sendMessage} className="mt-4 flex gap-2">
