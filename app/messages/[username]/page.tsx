@@ -8,24 +8,18 @@ import { Byte } from "@/components/Byte";
 
 type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
-type StickerId = "wow" | "lol" | "love" | "dead" | "fire" | "sus" | "cry" | "angry" | "cool" | "hmm" | "byte" | "gg";
-const STICKERS: Array<{ id: StickerId; label: string; symbol: string }> = [
-  { id: "wow", label: "WOW", symbol: "◉‿◉" },
-  { id: "lol", label: "LOL", symbol: "≧▽≦" },
-  { id: "love", label: "LOVE", symbol: "♥‿♥" },
-  { id: "dead", label: "DEAD", symbol: "×‿×" },
-  { id: "fire", label: "FIRE", symbol: "ϟ" },
-  { id: "sus", label: "SUS", symbol: "ಠ_ಠ" },
-  { id: "cry", label: "CRY", symbol: "╥﹏╥" },
-  { id: "angry", label: "ANGRY", symbol: "ಠ╭╮ಠ" },
-  { id: "cool", label: "COOL", symbol: "⌐■_■" },
-  { id: "hmm", label: "HMM", symbol: "¬_¬" },
-  { id: "byte", label: "BYTE", symbol: "▣_▣" },
-  { id: "gg", label: "GG", symbol: "★_★" },
+type StickerId = "class" | "dislike" | "love" | "laugh" | "wow" | "sad" | "cool" | "think" | "angry" | "error" | "wink" | "sleepy";
+const STICKERS: Array<{ id: StickerId; label: string; symbolId: string }> = [
+  { id: "class", label: "CLASS", symbolId: "f-class" }, { id: "dislike", label: "DISLIKE", symbolId: "f-dislike" },
+  { id: "love", label: "LOVE", symbolId: "f-love" }, { id: "laugh", label: "LAUGH", symbolId: "f-laugh" },
+  { id: "wow", label: "WOW", symbolId: "f-wow" }, { id: "sad", label: "SAD", symbolId: "f-sad" },
+  { id: "cool", label: "COOL", symbolId: "f-cool" }, { id: "think", label: "THINK", symbolId: "f-think" },
+  { id: "angry", label: "ANGRY", symbolId: "f-angry" }, { id: "error", label: "ERROR", symbolId: "f-error" },
+  { id: "wink", label: "WINK", symbolId: "f-wink" }, { id: "sleepy", label: "SLEEPY", symbolId: "f-sleepy" },
 ];
 const stickerContent = (id: StickerId) => "[[sticker:" + id + "]]";
 const getSticker = (content: string) => {
-  const match = content.match(/^\[\[sticker:(wow|lol|love|dead|fire|sus|cry|angry|cool|hmm|byte|gg)\]\]$/);
+  const match = content.match(/^\\[\\[sticker:(class|dislike|love|laugh|wow|sad|cool|think|angry|error|wink|sleepy)\\]\\]$/);
   return match ? STICKERS.find((sticker) => sticker.id === match[1]) ?? null : null;
 };
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
@@ -276,7 +270,7 @@ export default function ChatPage({ params }: Props) {
                 <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
                   {sticker ? (
                     <div className="flex flex-col items-center py-1" aria-label={sticker.label + " sticker"}>
-                      <div className="flex h-24 w-24 items-center justify-center border border-line bg-bg text-xl tracking-[-0.12em]">{sticker.symbol}</div>
+                      <div className="flex h-24 w-24 items-center justify-center border border-line bg-bg p-3"><svg className="h-full w-full" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg></div>
                       <span className="mt-2 text-[7px] uppercase tracking-[0.18em] opacity-50">{sticker.label}</span>
                     </div>
                   ) : <div>{message.content}</div>}
@@ -335,7 +329,7 @@ export default function ChatPage({ params }: Props) {
       {otherTyping && <div className="byte-inline mb-2" role="status" aria-live="polite"><Byte state="typing" className="!w-[56px]" /><span>@{username} is typing</span></div>}
       <div className="relative mt-4">
         {stickerOpen && (
-          <section className="absolute bottom-[calc(100%+8px)] left-0 z-20 w-full border border-line bg-bg p-4 shadow-2xl" aria-label="Stickers">
+          <section id="sticker-panel" className="absolute bottom-[calc(100%+8px)] left-0 z-20 w-full border border-line bg-bg p-4 shadow-2xl" aria-label="Stickers">
             <div className="mb-4 flex items-center justify-between border-b border-line pb-3">
               <span className="text-[9px] uppercase tracking-[0.16em]">Stickers / Байт</span>
               <button type="button" onClick={() => setStickerOpen(false)} className="text-muted hover:text-fg" aria-label="Close stickers"><X size={14} strokeWidth={1.25}/></button>
@@ -346,7 +340,7 @@ export default function ChatPage({ params }: Props) {
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                   {recentStickers.map((id) => {
                     const sticker = STICKERS.find((item) => item.id === id)!;
-                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line text-sm tracking-[-0.12em] hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}>{sticker.symbol}</button>;
+                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line p-2 hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}><svg className="h-full w-full" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg></button>;
                   })}
                 </div>
               </div>
@@ -355,7 +349,7 @@ export default function ChatPage({ params }: Props) {
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {STICKERS.map((sticker) => (
                 <button key={sticker.id} type="button" onClick={() => void sendSticker(sticker.id)} className="flex aspect-square flex-col items-center justify-center gap-1 border border-line hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}>
-                  <span className="text-base tracking-[-0.12em]">{sticker.symbol}</span>
+                  <svg className="h-10 w-10" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg>
                   <span className="text-[6px] uppercase tracking-[0.14em] opacity-50">{sticker.label}</span>
                 </button>
               ))}
