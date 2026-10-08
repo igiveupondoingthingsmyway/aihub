@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, use, useEffect, useRef, useState } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound, Users, Sticker, X, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
@@ -26,7 +26,9 @@ const getSticker = (content: string) => {
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
 
 export default function ChatPage({ params }: Props) {
-  const [username, setUsername] = useState("");
+  const { username: rawUsername } = use(params);
+  const targetUsername = decodeURIComponent(rawUsername).toLowerCase();
+  const [username, setUsername] = useState(targetUsername);
   const [me, setMe] = useState("");
   const [otherId, setOtherId] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -49,8 +51,7 @@ export default function ChatPage({ params }: Props) {
     let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
     async function load() {
       try {
-        const { username: rawUsername } = await params;
-        const target = decodeURIComponent(rawUsername).toLowerCase();
+        const target = targetUsername;
         setUsername(target);
         setError("");
 
@@ -129,7 +130,7 @@ export default function ChatPage({ params }: Props) {
     }
     load();
     return () => { if (channel) createClient().removeChannel(channel); };
-  }, [params, retryKey]);
+  }, [targetUsername, retryKey]);
 
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
