@@ -5,6 +5,7 @@ import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { ArrowLeft, MoreHorizontal, Send, UserRound, Users, Sticker, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
+import { ByteSticker } from "@/components/ByteSticker";
 
 type Props = { params: Promise<{ username: string }> };
 type Message = { id: string; sender_id: string; content: string; created_at: string };
@@ -265,17 +266,21 @@ export default function ChatPage({ params }: Props) {
               const sticker = getSticker(message.content);
               return (
               <div key={message.id} className={"flex " + (message.sender_id === me ? "justify-end" : "justify-start")}>
-                <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
-                  {sticker ? (
-                    <div className="flex flex-col items-center py-1" aria-label={sticker.label + " sticker"}>
-                      <div className="flex h-24 w-24 items-center justify-center p-3"><img src={"/stickers.svg#" + sticker.symbolId} alt="" className="h-full w-full object-contain" /></div>
-                      <span className="mt-2 text-[7px] uppercase tracking-[0.18em] opacity-50">{sticker.label}</span>
+                {sticker ? (
+                  <div className={"sticker-msg flex items-end gap-2 " + (message.sender_id === me ? "justify-end" : "justify-start")}>
+                    <div className="flex flex-col items-center">
+                      <ByteSticker id={sticker.id} size={112} />
+                      <span className="mt-1 text-[7px] uppercase tracking-[0.18em] text-muted">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
-                  ) : <div>{message.content}</div>}
-                  <div className={"mt-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
-                    {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
-                </div>
+                ) : (
+                  <div className={"max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
+                    <div>{message.content}</div>
+                    <div className={"mt-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  </div>
+                )}
               </div>
               );
             })}
@@ -338,7 +343,7 @@ export default function ChatPage({ params }: Props) {
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                   {recentStickers.map((id) => {
                     const sticker = STICKERS.find((item) => item.id === id)!;
-                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line p-2 hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}><img src={"/stickers.svg#" + sticker.symbolId} alt="" className="h-full w-full object-contain" /></button>;
+                    return <button key={id} type="button" onClick={() => void sendSticker(id)} className="flex aspect-square items-center justify-center border border-line p-2 hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}><ByteSticker id={sticker.id} size={56} /></button>;
                   })}
                 </div>
               </div>
@@ -347,7 +352,7 @@ export default function ChatPage({ params }: Props) {
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {STICKERS.map((sticker) => (
                 <button key={sticker.id} type="button" onClick={() => void sendSticker(sticker.id)} className="flex aspect-square flex-col items-center justify-center gap-1 border border-line hover:bg-fg hover:text-bg" aria-label={sticker.label + " sticker"}>
-                  <svg className="h-10 w-10" viewBox="0 0 48 48" aria-hidden="true"><use href={"#" + sticker.symbolId} /></svg>
+                  <ByteSticker id={sticker.id} size={48} />
                   <span className="text-[6px] uppercase tracking-[0.14em] opacity-50">{sticker.label}</span>
                 </button>
               ))}
