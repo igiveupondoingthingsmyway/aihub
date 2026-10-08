@@ -1,0 +1,10 @@
+"use client";
+import Link from "next/link";
+import { useEffect,useState } from "react";
+import { MessageCircle, ArrowRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+export function MobileMessages(){const [items,setItems]=useState<any[]>([]),[loading,setLoading]=useState(true);
+async function load(){const s=createClient();const {data:{user}}=await s.auth.getUser();if(!user){window.location.href="/login";return}const {data:c}=await s.from("conversations").select("id,user_one,user_two").or("user_one.eq."+user.id+",user_two.eq."+user.id).order("created_at",{ascending:false});const ids=(c??[]).map(x=>x.user_one===user.id?x.user_two:x.user_one);const {data:p}=ids.length?await s.from("profiles").select("id,username,bio,avatar_url,last_seen").in("id",ids):{data:[]};setItems((c??[]).map(x=>({...x,other:p?.find(y=>y.id===(x.user_one===user.id?x.user_two:x.user_one))})).filter(x=>x.other));setLoading(false)}
+useEffect(()=>{void load();const t=setInterval(()=>void load(),5000);return()=>clearInterval(t)},[]);
+if(loading)return <main className="mobile-page"><div className="mobile-page-title"><span>SOCIAL / MESSAGES</span><h1>CHATS.</h1></div><div className="mobile-loading">LOADING...</div></main>;
+return <main className="mobile-page"><div className="mobile-page-title"><span>PRIVATE CONVERSATIONS</span><h1>CHATS.</h1></div><div className="mobile-chat-list">{items.length?items.map(x=><Link key={x.id} href={"/messages/"+x.other.username} className="mobile-chat-row"><span className="mobile-avatar">{x.other.avatar_url?<img src={x.other.avatar_url} alt=""/>:x.other.username[0]}</span><span className="mobile-chat-copy"><b>@{x.other.username}</b><small>CONVERSATION</small></span><ArrowRight size={15}/></Link>):<div className="mobile-empty"><MessageCircle size={28}/><span>NO CONVERSATIONS YET.</span><small>GO TO NETWORK TO FIND PEOPLE.</small><Link href="/network">FIND PEOPLE <ArrowRight size={12}/></Link></div>}</div></main>}
