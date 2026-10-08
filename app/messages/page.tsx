@@ -185,7 +185,7 @@ export default function MessagesPage() {
             ) : (
               <div>
                 {conversations.map(conversation => conversation.other && (
-                  <Link key={conversation.id} href={"/profile/" + conversation.other.username} className="group flex items-center gap-4 border-b border-line py-5 transition-colors hover:text-muted">
+                  <Link key={conversation.id} href={"/messages/" + conversation.other.username} className="group flex items-center gap-4 border-b border-line py-5 transition-colors hover:text-muted">
                     <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line">{conversation.other.avatar_url ? <img src={conversation.other.avatar_url} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-[9px] uppercase">{conversation.other.username.slice(0, 1)}</span>}</span>
                     <div>
                       <p className="text-xs">@{conversation.other.username}</p>
