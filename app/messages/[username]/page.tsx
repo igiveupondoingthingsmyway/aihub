@@ -19,7 +19,7 @@ const STICKERS: Array<{ id: StickerId; label: string; symbolId: string }> = [
 ];
 const stickerContent = (id: StickerId) => "[[sticker:" + id + "]]";
 const getSticker = (content: string) => {
-  const match = content.match(/^\\[\\[sticker:(class|dislike|love|laugh|wow|sad|cool|think|angry|error|wink|sleepy)\\]\\]$/);
+  const match = content.match(/^\[\[sticker:(class|dislike|love|laugh|wow|sad|cool|think|angry|error|wink|sleepy)\]\]$/);
   return match ? STICKERS.find((sticker) => sticker.id === match[1]) ?? null : null;
 };
 type Profile = { id: string; username: string; bio: string; avatar_url: string; last_seen: string };
