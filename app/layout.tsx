@@ -13,6 +13,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: { default: "SHB: GO IN. GO TIME.", template: "%s | SHB" },
   description: "SHB is a social hub for discovering people, conversations and useful AI tools.",
+  appleWebApp: { capable: true, title: "SHB", statusBarStyle: "black-translucent" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
