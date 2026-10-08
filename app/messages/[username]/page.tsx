@@ -281,14 +281,14 @@ export default function ChatPage({ params }: Props) {
                 {sticker ? (
                   <div className={"sticker-msg group flex items-end gap-2 " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                     <div className="relative flex flex-col items-center">
-                      {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute -right-7 top-1 hidden h-6 w-6 items-center justify-center border border-line text-muted hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
+                      {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-1 top-1 z-10 hidden h-6 w-6 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
                       <ByteSticker id={sticker.id} size={112} />
                       <span className="mt-1 text-[7px] uppercase tracking-[0.18em] text-muted">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
                   </div>
                 ) : (
                   <div className={"group relative max-w-[80%] px-4 py-3 text-sm leading-6 " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
-                    {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute -right-8 top-2 hidden h-6 w-6 items-center justify-center border border-line text-muted hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
+                    {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-2 top-2 z-10 hidden h-6 w-6 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
                     <div>{message.content}</div>
                     <div className={"mt-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
                       {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
