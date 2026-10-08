@@ -196,7 +196,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const isMe = me === profile.id;
 
   return (
-    <main className="mx-auto max-w-6xl px-5 pb-24 pt-10 sm:px-8 sm:pt-16">
+    <main className="mobile-public-profile mx-auto max-w-6xl px-5 pb-24 pt-10 sm:px-8 sm:pt-16">
       <Link href="/network" className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-fg">
         <ArrowLeft size={13} /> Back to network
       </Link>
