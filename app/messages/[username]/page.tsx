@@ -8,6 +8,9 @@ import { useParams } from "next/navigation";
 import { Byte } from "@/components/Byte";
 import { ByteSticker } from "@/components/ByteSticker";
 
+const BYTE_ICON_SMALL = "/ic_stat_byte_96.png.png";
+const BYTE_ICON_LARGE = "/byte-icon-512.png.png";
+
 type Message = { id: string; sender_id: string; content: string; created_at: string };
 type StickerId = "class" | "dislike" | "love" | "laugh" | "wow" | "sad" | "cool" | "think" | "angry" | "error" | "wink" | "sleepy";
 const STICKERS: Array<{ id: StickerId; label: string; symbolId: string }> = [
@@ -261,7 +264,7 @@ export default function ChatPage() {
             {avatarSrc ? (
               <img src={avatarSrc} alt={"@" + username + " avatar"} className="h-full w-full object-cover" />
             ) : (
-              <span className="text-[9px] uppercase">{username.slice(0, 1)}</span>
+              <img src={BYTE_ICON_SMALL} alt="" className="h-full w-full object-contain p-1" />
             )}
           </span>
           <span className="text-xs">@{username}</span>
@@ -272,7 +275,7 @@ export default function ChatPage() {
       <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-[1fr_280px]">
         <section className="min-h-[55vh] border-b border-line">
         {messages.length === 0 ? (
-          <div className="byte-state min-h-[55vh]"><Byte state="idle" /><h3>No messages yet</h3><p>Say hi to @{username}.</p></div>
+          <div className="byte-state min-h-[55vh]"><img src={BYTE_ICON_LARGE} alt="" className="h-24 w-24 object-contain" /><h3>No messages yet</h3><p>Say hi to @{username}.</p></div>
         ) : (
           <div className="space-y-3 py-6">
             {messages.map((message) => {
