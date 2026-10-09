@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { ArrowLeft, MoreHorizontal, Send, UserRound, Users, Sticker, X, Trash2 } from "lucide-react";
+import { ArrowLeft, ImagePlus, MoreHorizontal, Send, UserRound, Users, Sticker, X, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useParams } from "next/navigation";
 import { Byte } from "@/components/Byte";
@@ -49,6 +49,9 @@ export default function ChatPage() {
   const [stickerOpen, setStickerOpen] = useState(false);
   const [recentStickers, setRecentStickers] = useState<StickerId[]>([]);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [signedImageUrls, setSignedImageUrls] = useState<Record<string, string>>({});
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null = null;
@@ -115,12 +118,24 @@ export default function ChatPage() {
           .eq("conversation_id", conversation)
           .order("created_at", { ascending: true });
         if (messagesError) throw messagesError;
-        setMessages(data ?? []);
+        const loadedMessages = data ?? [];
+        setMessages(loadedMessages);
+        await Promise.all(loadedMessages.map(async (message) => {
+          const match = message.content.match(/^\[\[image:(.+)\]\]$/);
+          if (!match) return;
+          const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 60 * 60);
+          if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [message.id]: signed.signedUrl }));
+        }));
 
         channel = supabase.channel("chat-" + conversation)
-          .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "conversation_id=eq." + conversation }, (payload) => {
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: "conversation_id=eq." + conversation }, async (payload) => {
             const incoming = payload.new as Message;
             setMessages((current) => current.some((m) => m.id === incoming.id) ? current : [...current, incoming]);
+            const match = incoming.content.match(/^\[\[image:(.+)\]\]$/);
+            if (match) {
+              const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 60 * 60);
+              if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [incoming.id]: signed.signedUrl }));
+            }
           })
           .subscribe();
       } catch (loadError) {
@@ -243,6 +258,51 @@ export default function ChatPage() {
     }
   }
 
+  async function sendImage(file: File) {
+    if (!conversationId || !me || uploadingImage) return;
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setError("Choose an image up to 5 MB.");
+      return;
+    }
+    setUploadingImage(true);
+    setError("");
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = conversationId + "/" + me + "/" + crypto.randomUUID() + "-" + safeName;
+    const supabase = createClient();
+    const { error: uploadError } = await supabase.storage.from("chat-media").upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+    if (uploadError) {
+      setError(uploadError.message);
+      setUploadingImage(false);
+      return;
+    }
+    const content = "[[image:" + storagePath + "]]";
+    const { data, error: sendError } = await supabase
+      .from("messages")
+      .insert({ conversation_id: conversationId, sender_id: me, content })
+      .select("id,sender_id,content,created_at")
+      .single();
+    if (sendError) {
+      await supabase.storage.from("chat-media").remove([storagePath]);
+      setError(sendError.message);
+      setUploadingImage(false);
+      return;
+    }
+    if (data) {
+      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(storagePath, 60 * 60);
+      if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [data.id]: signed.signedUrl }));
+      setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
+      void fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }),
+      }).catch(() => {});
+    }
+    setUploadingImage(false);
+  }
+
   async function deleteMessage(messageId: string) {
     if (!me) return;
     setDeletingMessageId(messageId);
@@ -304,6 +364,7 @@ export default function ChatPage() {
           <div className="space-y-3 py-6">
             {messages.map((message) => {
               const sticker = getSticker(message.content);
+              const imageMatch = message.content.match(/^\[\[image:(.+)\]\]$/);
               return (
               <div key={message.id} className={"flex " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                 {sticker ? (
@@ -312,6 +373,20 @@ export default function ChatPage() {
                       {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-1 top-1 z-10 hidden h-6 w-6 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
                       <ByteSticker id={sticker.id} size={112} />
                       <span className="mt-1 text-[7px] uppercase tracking-[0.18em] text-muted">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                    </div>
+                  </div>
+                ) : imageMatch ? (
+                  <div className={"group relative max-w-[80%] overflow-hidden " + (message.sender_id === me ? "bg-fg text-bg" : "border border-line")}>
+                    {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-2 top-2 z-10 hidden h-7 w-7 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete image message"><Trash2 size={11} strokeWidth={1.25} /></button>}
+                    {signedImageUrls[message.id] ? (
+                      <a href={signedImageUrls[message.id]} target="_blank" rel="noreferrer">
+                        <img src={signedImageUrls[message.id]} alt="Image attachment" loading="lazy" className="max-h-[420px] max-w-full object-contain" />
+                      </a>
+                    ) : (
+                      <div className="flex h-32 w-48 items-center justify-center text-[9px] uppercase tracking-[0.12em] text-muted">Loading image…</div>
+                    )}
+                    <div className={"px-3 py-2 text-[8px] uppercase tracking-[0.08em] " + (message.sender_id === me ? "text-bg/60" : "text-muted")}>
+                      {new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </div>
                   </div>
                 ) : (
@@ -403,6 +478,14 @@ export default function ChatPage() {
           </section>
         )}
         <form onSubmit={sendMessage} className="flex gap-2">
+        <input ref={imageInput} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="sr-only" disabled={uploadingImage} onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void sendImage(file);
+          e.currentTarget.value = "";
+        }} />
+        <button type="button" onClick={() => imageInput.current?.click()} disabled={uploadingImage} aria-label="Send image" title="Send image" className="flex h-12 w-12 shrink-0 items-center justify-center border border-line text-fg hover:bg-fg hover:text-bg disabled:opacity-40">
+          {uploadingImage ? <span className="text-[8px]">...</span> : <ImagePlus size={16} strokeWidth={1.25}/>}
+        </button>
         <button type="button" onClick={() => setStickerOpen((open) => !open)} aria-expanded={stickerOpen} aria-controls="sticker-panel" aria-label="Stickers" className={"flex h-12 w-12 shrink-0 items-center justify-center border border-line " + (stickerOpen ? "bg-fg text-bg" : "text-fg hover:bg-fg hover:text-bg")}>
           <Sticker size={16} strokeWidth={1.25}/>
         </button>
