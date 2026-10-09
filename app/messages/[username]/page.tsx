@@ -89,7 +89,7 @@ export default function ChatPage() {
             const markerIndex = profile.avatar_url.indexOf(marker);
             if (markerIndex !== -1) {
               const storagePath = decodeURIComponent(profile.avatar_url.slice(markerIndex + marker.length));
-              const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(storagePath, 60 * 60);
+              const { data: signed } = await supabase.storage.from("profile-media").createSignedUrl(storagePath, 7 * 24 * 60 * 60);
               setAvatarSrc(signed?.signedUrl || profile.avatar_url);
             } else {
               setAvatarSrc(profile.avatar_url);
@@ -123,7 +123,7 @@ export default function ChatPage() {
         await Promise.all(loadedMessages.map(async (message) => {
           const match = message.content.match(/^\[\[image:(.+)\]\]$/);
           if (!match) return;
-          const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 60 * 60);
+          const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 7 * 24 * 60 * 60);
           if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [message.id]: signed.signedUrl }));
         }));
 
@@ -133,7 +133,7 @@ export default function ChatPage() {
             setMessages((current) => current.some((m) => m.id === incoming.id) ? current : [...current, incoming]);
             const match = incoming.content.match(/^\[\[image:(.+)\]\]$/);
             if (match) {
-              const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 60 * 60);
+              const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(match[1], 7 * 24 * 60 * 60);
               if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [incoming.id]: signed.signedUrl }));
             }
           })
@@ -291,7 +291,7 @@ export default function ChatPage() {
       return;
     }
     if (data) {
-      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(storagePath, 60 * 60);
+      const { data: signed } = await supabase.storage.from("chat-media").createSignedUrl(storagePath, 7 * 24 * 60 * 60);
       if (signed?.signedUrl) setSignedImageUrls((current) => ({ ...current, [data.id]: signed.signedUrl }));
       setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
       void fetch("/api/push/send", {
