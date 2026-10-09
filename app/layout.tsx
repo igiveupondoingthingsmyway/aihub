@@ -13,6 +13,11 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: { default: "SHB: GO IN. GO TIME.", template: "%s | SHB" },
   description: "SHB is a social hub for discovering people, conversations and useful AI tools.",
+  icons: {
+    icon: "/byte-icon-512.png.png",
+    shortcut: "/byte-icon-512.png.png",
+    apple: "/byte-icon-512.png.png",
+  },
   appleWebApp: { capable: true, title: "SHB", statusBarStyle: "black-translucent" },
 };
 
