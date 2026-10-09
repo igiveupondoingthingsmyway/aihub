@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ImagePlus, LogOut, Save, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Byte } from "@/components/Byte";
+import { PushSetup } from "@/components/PushSetup";
 
 type Profile = {
   username: string;
@@ -200,6 +201,11 @@ export default function ProfilePage() {
               <Byte state="idle" className="!w-[70px] shrink-0" />
               <p className="text-[10px] uppercase leading-5 tracking-[0.08em] text-muted">{message || "Your profile settings live here."}</p>
             </div>
+          </div>
+          <div className="border border-line p-5">
+            <div className="text-[9px] uppercase tracking-[0.18em] text-muted">Notifications</div>
+            <p className="mt-2 text-[10px] uppercase leading-5 tracking-[0.08em] text-muted">Enable push alerts for messages and activity on this device.</p>
+            <PushSetup />
           </div>
           <div className="border-t border-line pt-5">
             <div className="mb-3 flex items-center justify-between"><span className="text-[9px] uppercase tracking-[0.16em]">Saved tools</span><Link href="/ai-tools" className="text-[9px] uppercase tracking-[0.12em] text-muted hover:text-fg">Browse ↗</Link></div>
