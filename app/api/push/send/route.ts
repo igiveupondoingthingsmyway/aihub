@@ -57,6 +57,28 @@ export async function POST(request: Request) {
       body: messageBody,
     });
 
+    // If the recipient has never enabled push, notify the sending account
+    // instead, but only for direct messages and only if the sender has a subscription.
+    if (kind === "message" && !result.skipped && result.sent === 0 && result.subscriptions === 0) {
+      const { data: targetProfile } = await admin
+        .from("profiles")
+        .select("username")
+        .eq("id", targetUserId)
+        .maybeSingle();
+
+      const fallback = await sendPushNotification({
+        userId: user.id,
+        kind: "message",
+        senderUsername: targetProfile?.username ?? "your recipient",
+        url,
+        body: targetProfile?.username
+          ? `Message sent to @${targetProfile.username}`
+          : "Your message was sent",
+      });
+
+      return NextResponse.json({ ...fallback, fallback: true, recipientSent: 0 });
+    }
+
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("[PUSH API]", error);
