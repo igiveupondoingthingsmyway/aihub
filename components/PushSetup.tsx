@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 function base64UrlToUint8Array(base64Url: string) {
@@ -13,6 +13,47 @@ function base64UrlToUint8Array(base64Url: string) {
 export function PushSetup() {
   const [status, setStatus] = useState<"idle" | "loading" | "enabled" | "error">("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function restoreSubscription() {
+      if (!("Notification" in window) || Notification.permission !== "granted" || !("serviceWorker" in navigator)) return;
+      try {
+        const keyResponse = await fetch("/api/push/public-key", { cache: "no-store" });
+        if (!keyResponse.ok) return;
+        const { publicKey } = await keyResponse.json();
+        if (!publicKey) return;
+        const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+        let subscription = await registration.pushManager?.getSubscription();
+        if (!subscription && registration.pushManager) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: base64UrlToUint8Array(publicKey),
+          });
+        }
+        if (!subscription || cancelled) return;
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const json = subscription.toJSON();
+        if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return;
+        const response = await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth, userAgent: navigator.userAgent }),
+        });
+        if (!response.ok) throw new Error("Could not restore push subscription.");
+        if (!cancelled) {
+          setStatus("enabled");
+          setMessage("PUSH ENABLED");
+        }
+      } catch (error) {
+        console.warn("[PUSH] Could not restore subscription:", error);
+      }
+    }
+    void restoreSubscription();
+    return () => { cancelled = true; };
+  }, []);
 
   async function enable() {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
