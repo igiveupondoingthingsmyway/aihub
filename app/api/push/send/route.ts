@@ -59,7 +59,7 @@ export async function POST(request: Request) {
 
     // If the recipient has never enabled push, notify the sending account
     // instead, but only for direct messages and only if the sender has a subscription.
-    if (kind === "message" && !result.skipped && result.sent === 0 && result.subscriptions === 0) {
+    if (kind === "message" && !result.skipped && result.sent === 0) {
       const { data: targetProfile } = await admin
         .from("profiles")
         .select("username")
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
           : "Your message was sent",
       });
 
-      return NextResponse.json({ ...fallback, fallback: true, recipientSent: 0 });
+      return NextResponse.json({ ...fallback, fallback: true, recipientSent: 0, recipientSubscriptions: result.subscriptions });
     }
 
     return NextResponse.json(result);
