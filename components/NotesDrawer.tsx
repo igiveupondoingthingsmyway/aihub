@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Pin, Plus, Search, X, Trash2, Send, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, Pin, Plus, Search, X, Trash2, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Note = { id: string; title: string; content: string; pinned: boolean; created_at: string; updated_at: string };
@@ -16,7 +16,6 @@ export function NotesDrawer() {
   const [userId, setUserId] = useState<string | null>(null);
   const [status, setStatus] = useState("Notes are private. Only you see them.");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectedNote = notes.find(note => note.id === selected) || null;
 
@@ -55,11 +54,9 @@ export function NotesDrawer() {
 
   async function saveNow(id: string, nextTitle: string, nextContent: string, nextPinned?: boolean) {
     if (!userId) { setStatus("Sign in to save notes."); return; }
-    setBusy(true);
     const patch: Record<string, unknown> = { title: nextTitle, content: nextContent, updated_at: new Date().toISOString() };
     if (typeof nextPinned === "boolean") patch.pinned = nextPinned;
     const { error: saveError } = await createClient().from("notes").update(patch).eq("id", id).eq("user_id", userId);
-    setBusy(false);
     if (saveError) { setError(saveError.message); setStatus("Couldn't save."); }
     else { setError(""); setStatus("Saved."); setNotes(items => items.map(item => item.id === id ? { ...item, ...patch } as Note : item).sort((a,b) => Number(b.pinned)-Number(a.pinned) || Date.parse(b.updated_at)-Date.parse(a.updated_at))); }
   }
