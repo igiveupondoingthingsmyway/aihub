@@ -13,6 +13,24 @@ function base64UrlToUint8Array(base64Url: string) {
 export function PushSetup() {
   const [status, setStatus] = useState<"idle" | "loading" | "enabled" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [testing, setTesting] = useState(false);
+
+  async function sendTest() {
+    setTesting(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/push/test", { method: "POST" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Test notification failed.");
+      if (result.skipped) throw new Error("Push server is missing its VAPID or Supabase configuration.");
+      if (!result.sent) throw new Error("No saved push subscription was found for this account.");
+      setMessage("TEST PUSH SENT — CHECK YOUR PHONE.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Test notification failed.");
+    } finally {
+      setTesting(false);
+    }
+  }
 
   async function enable() {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -107,7 +125,17 @@ export function PushSetup() {
       >
         {status === "loading" ? "ENABLING..." : status === "enabled" ? "PUSH ENABLED" : "ENABLE PUSH NOTIFICATIONS"}
       </button>
-      {message && <p className={"mt-2 text-[8px] uppercase tracking-[0.1em] " + (status === "error" ? "text-muted" : "")}>{message}</p>}
+      {status === "enabled" && (
+        <button
+          type="button"
+          onClick={() => void sendTest()}
+          disabled={testing}
+          className="mt-2 w-full border border-line px-3 py-3 text-[9px] uppercase tracking-[0.14em] hover:bg-fg hover:text-bg disabled:opacity-50"
+        >
+          {testing ? "SENDING TEST..." : "SEND TEST PUSH"}
+        </button>
+      )}
+      {message && <p className={"mt-2 text-[8px] uppercase tracking-[0.1em] " + (status === "error" || message.includes("failed") || message.includes("missing") || message.includes("No saved") ? "text-muted" : "")}>{message}</p>}
     </div>
   );
 }
