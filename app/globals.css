@@ -111,7 +111,7 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-header { position:fixed; inset:0 0 auto; z-index:50; height:52px; padding-top:env(safe-area-inset-top); box-sizing:content-box; display:flex; align-items:center; justify-content:space-between; padding-left:16px; padding-right:16px; border-bottom:1px solid var(--line); background:var(--bg); }
 .mobile-logo { font-size:13px; font-weight:600; letter-spacing:.12em; }
 .mobile-header-icon { display:flex; width:36px; height:36px; align-items:center; justify-content:center; color:var(--muted); }
-.mobile-content { min-height:100dvh; padding-top:52px; padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
+.mobile-content { min-height:100dvh; padding-top:calc(52px + env(safe-area-inset-top)); padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
 .mobile-nav { position:fixed; inset:auto 0 0; z-index:50; height:62px; padding-bottom:env(safe-area-inset-bottom); display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--ink); background:var(--bg); }
 .mobile-nav a,.mobile-nav button { min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--mute); font-size:7px; letter-spacing:.12em; text-transform:uppercase; }
 .mobile-nav a.active { color:var(--ink); font-weight:600; }
@@ -337,4 +337,145 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-notification-row small {
   display: block;
   overflow-wrap: anywhere;
+}
+
+
+/* Notification sheet: clear hierarchy and readable contrast */
+.mobile-notification-overlay.sheet {
+  color: var(--fg);
+}
+
+.mobile-notification-overlay .sheet-bar {
+  flex: 0 0 52px;
+  min-height: 52px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.mobile-notification-overlay .sheet-bar h2 {
+  margin: 0;
+  color: var(--fg);
+  text-align: center;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .16em;
+}
+
+.mobile-notification-overlay .sheet-close,
+.mobile-notification-overlay .sheet-spacer {
+  width: 36px;
+  height: 36px;
+}
+
+.mobile-notification-overlay .sheet-close {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--fg);
+}
+
+.mobile-notification-overlay .sheet-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+}
+
+.mobile-notification-overlay .push-banner {
+  padding: 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-notification-overlay .push-banner > div {
+  margin-top: 0 !important;
+  border-top: 0 !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px;
+}
+
+.mobile-notification-overlay .push-banner button {
+  min-height: 44px;
+  color: var(--fg);
+  background: transparent;
+  border-color: var(--line);
+  line-height: 1.5;
+}
+
+.mobile-notification-overlay .push-banner button:hover {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.mobile-notification-overlay .notif-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mobile-notification-overlay .notif {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  box-sizing: border-box;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.mobile-notification-overlay .notif-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+}
+
+.mobile-notification-overlay .notif-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.mobile-notification-overlay .notif-text b {
+  display: block;
+  max-width: 100%;
+  color: var(--fg);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.mobile-notification-overlay .notif-text > span {
+  display: block;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: .08em;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.mobile-notification-overlay .notif-time {
+  align-self: start;
+  padding-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.5;
+  letter-spacing: .08em;
+  white-space: nowrap;
 }

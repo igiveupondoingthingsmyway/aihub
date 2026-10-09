@@ -52,10 +52,12 @@ export function MobileShell({ children }: { children: ReactNode }) {
     <div className="mobile-shell">
       <header className="mobile-header">
         <Link href="/" className="mobile-logo">SHB</Link>
-        <MobileNotifications />
-        <Link href="/messages" className="mobile-header-icon" aria-label="Messages">
-          <MessageSquare size={17} strokeWidth={1.25} />
-        </Link>
+        <div className="mobile-header-actions">
+          <MobileNotifications />
+          <Link href="/messages" className="mobile-header-icon" aria-label="Messages">
+            <MessageSquare size={17} strokeWidth={1.25} />
+          </Link>
+        </div>
       </header>
 
       <div className="mobile-content">{pathname === "/" ? <MobileFeed /> : pathname.startsWith("/network") ? <MobileNetwork /> : pathname === "/messages" ? <MobileMessages /> : pathname === "/profile" ? <MobileProfile /> : pathname === "/ai-tools" ? <MobileAITools /> : children}</div>

@@ -230,7 +230,16 @@ export default function ChatPage() {
     if (sendError) { setError(sendError.message); return; }
     if (data) {
       setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
-      void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }) }).catch(() => {});
+      void fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }),
+      }).then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) console.error("[PUSH MESSAGE] Request failed:", response.status, result);
+        else if (result.sent === 0 && !result.skipped) console.warn("[PUSH MESSAGE] No notification delivered:", result);
+        else console.info("[PUSH MESSAGE] Result:", result);
+      }).catch((pushError) => console.error("[PUSH MESSAGE] Network error:", pushError));
     }
   }
 
@@ -255,7 +264,16 @@ export default function ChatPage() {
     if (sendError) { setText(content); setError(sendError.message); return; }
     if (data) {
       setMessages((current) => current.some((m) => m.id === data.id) ? current : [...current, data]);
-      void fetch("/api/push/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }) }).catch(() => {});
+      void fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: otherId, kind: "message", url: "/messages/" + username }),
+      }).then(async (response) => {
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) console.error("[PUSH MESSAGE] Request failed:", response.status, result);
+        else if (result.sent === 0 && !result.skipped) console.warn("[PUSH MESSAGE] No notification delivered:", result);
+        else console.info("[PUSH MESSAGE] Result:", result);
+      }).catch((pushError) => console.error("[PUSH MESSAGE] Network error:", pushError));
     }
   }
 

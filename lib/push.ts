@@ -17,7 +17,7 @@ export async function sendPushNotification(input: {
 }) {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !SUPABASE_URL || !SERVICE_ROLE_KEY) {
     console.warn("[PUSH] Missing server environment variables");
-    return { sent: 0, skipped: true };
+    return { sent: 0, skipped: true, subscriptions: 0 };
   }
 
   webpush.setVapidDetails("mailto:admin@shb.app", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
@@ -71,5 +71,5 @@ export async function sendPushNotification(input: {
     }
   }
 
-  return { sent, skipped: false };
+  return { sent, skipped: false, subscriptions: (subscriptions ?? []).length };
 }

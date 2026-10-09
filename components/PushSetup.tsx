@@ -32,6 +32,8 @@ export function PushSetup() {
     }
   }
 
+
+
   async function enable() {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isStandalone =
