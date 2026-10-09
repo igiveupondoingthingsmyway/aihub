@@ -608,7 +608,7 @@ button, input, textarea, select { font-weight: 400; }
 .notes-dots.is-typing circle{animation:mobile-dots .6s steps(2) infinite}
 .notes-dots.is-typing circle:nth-child(2){animation-delay:.2s}.notes-dots.is-typing circle:nth-child(3){animation-delay:.4s}
 @media(min-width:768px){
- .desktop-shell .notes-toggle{display:inline-flex;position:fixed;right:24px;top:13px;z-index:41;background:var(--bg)}
+ .notes-toggle{display:inline-flex;position:fixed;right:24px;top:13px;z-index:51;background:var(--bg)}
  body.notes-open .desktop-shell>main,body.notes-open .desktop-shell>.mobile-content{margin-right:min(650px,100vw);transition:margin-right .24s ease}
 }
 @media(max-width:767px){
