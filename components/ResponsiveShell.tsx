@@ -1,12 +1,19 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { MobileShell } from "@/components/MobileShell";
 import { PushAutoRestore } from "@/components/PushAutoRestore";
 
 export function ResponsiveShell({ children }: { children: ReactNode }) {
   const [mobile, setMobile] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const segment = pathname.split("/").filter(Boolean).pop();
+    document.title = segment ? segment.replace(/-/g, " ").toLowerCase() : "SHB";
+  }, [pathname]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
