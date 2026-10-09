@@ -93,20 +93,6 @@ export function Navbar() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!notificationOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setNotificationOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [notificationOpen]);
-
   async function markRead(id: string) {
     await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
     setNotifications(items => items.filter(item => item.id !== id));
@@ -143,10 +129,8 @@ export function Navbar() {
                 <Bell size={15} strokeWidth={1.25}/>
                 {notificationCount > 0 && <span className="absolute right-0.5 top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-fg px-1 text-[7px] font-medium text-bg">{notificationCount > 9 ? "9+" : notificationCount}</span>}
               </button>
-              {notificationOpen && <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                <button type="button" aria-label="Close notifications" onClick={() => setNotificationOpen(false)} className="absolute inset-0 h-full w-full bg-black/55 backdrop-blur-sm" />
-                <div role="dialog" aria-modal="true" aria-labelledby="desktop-notifications-title" className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-line bg-bg shadow-2xl">
-                <div className="flex items-center justify-between border-b border-line px-4 py-3"><span id="desktop-notifications-title" className="text-[9px] uppercase tracking-[0.16em]">Notifications</span><div className="flex items-center gap-4"><span className="text-[9px] uppercase tracking-[0.1em] text-muted">{notificationCount} new</span><button type="button" onClick={() => setNotificationOpen(false)} aria-label="Close notifications" className="flex h-7 w-7 items-center justify-center text-muted hover:text-fg"><X size={15}/></button></div></div>
+              {notificationOpen && <div className="absolute right-0 top-11 z-50 w-80 border border-line bg-bg shadow-2xl">
+                <div className="flex items-center justify-between border-b border-line px-4 py-3"><span className="text-[9px] uppercase tracking-[0.16em]">Notifications</span><span className="text-[9px] uppercase tracking-[0.1em] text-muted">{notificationCount} new</span></div>
                 {notificationCount === 0 ? <div className="px-4 py-8 text-center text-[9px] uppercase tracking-[0.1em] text-muted">Nothing new.</div> :
                   <div className="max-h-[70vh] overflow-y-auto">
                     {friendNotifications.slice(0, 6).map(notification => <a key={"friend-" + notification.id} href={"/profile/" + notification.sender?.username} onClick={() => setNotificationOpen(false)} className="flex gap-3 border-b border-line px-4 py-4 transition-colors hover:bg-fg hover:text-bg">
@@ -163,7 +147,6 @@ export function Navbar() {
                     })}
                   </div>}
                 <a href="/messages" onClick={() => setNotificationOpen(false)} className="flex items-center justify-center gap-2 border-t border-line px-4 py-3 text-[9px] uppercase tracking-[0.12em] transition-colors hover:bg-fg hover:text-bg"><MessageSquare size={12}/>Open messages</a>
-                </div>
               </div>}
             </div>
             <a href="/profile" className="flex items-center gap-2 border border-line px-4 py-2 text-fg transition-colors hover:bg-fg hover:text-bg"><UserRound size={13}/>Profile</a>
