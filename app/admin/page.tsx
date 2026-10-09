@@ -124,9 +124,9 @@ export default function AdminPage() {
     const { error } = await supabase.from("messages").delete().eq("id", message.id);
     if (error) setNotice(error.message);
     else {
-      const imageMatch = message.content.match(/^\\[\\[image:(.+)\\]\\]$/);
-      if (imageMatch) {
-        const { error: storageError } = await supabase.storage.from("chat-media").remove([imageMatch[1]]);
+      const imagePath = message.content.startsWith("[[image:") ? message.content.slice(8, -2) : null;
+      if (imagePath) {
+        const { error: storageError } = await supabase.storage.from("chat-media").remove([imagePath]);
         if (storageError) console.warn("Could not remove chat image:", storageError.message);
       }
       setMessages((current) => current.filter((item) => item.id !== message.id));
