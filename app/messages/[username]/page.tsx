@@ -33,6 +33,7 @@ export default function ChatPage() {
   const targetUsername = decodeURIComponent(routeParams.username ?? "").toLowerCase();
   const [username, setUsername] = useState(targetUsername);
   const [me, setMe] = useState("");
+  const [isOwner, setIsOwner] = useState(false);
   const [otherId, setOtherId] = useState("");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarSrc, setAvatarSrc] = useState("");
@@ -69,6 +70,8 @@ export default function ChatPage() {
           return;
         }
         setMe(user.id);
+        const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
+        setIsOwner(roleRow?.role === "owner");
 
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
@@ -308,9 +311,19 @@ export default function ChatPage() {
     setDeletingMessageId(messageId);
     setError("");
     const supabase = createClient();
-    const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", me);
+    const targetMessage = messages.find((message) => message.id === messageId);
+    let deleteQuery = supabase.from("messages").delete().eq("id", messageId);
+    if (!isOwner) deleteQuery = deleteQuery.eq("sender_id", me);
+    const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).match(isOwner ? {} : { sender_id: me });
     if (deleteError) setError(deleteError.message);
-    else setMessages((current) => current.filter((message) => message.id !== messageId));
+    else {
+      const imageMatch = targetMessage?.content.match(/^\\[\\[image:(.+)\\]\\]$/);
+      if (imageMatch) {
+        const { error: storageError } = await supabase.storage.from("chat-media").remove([imageMatch[1]]);
+        if (storageError) console.warn("Could not remove chat image:", storageError.message);
+      }
+      setMessages((current) => current.filter((message) => message.id !== messageId));
+    }
     setDeletingMessageId(null);
   }
 
@@ -370,7 +383,7 @@ export default function ChatPage() {
                 {sticker ? (
                   <div className={"sticker-msg group flex items-end gap-2 " + (message.sender_id === me ? "justify-end" : "justify-start")}>
                     <div className="relative flex flex-col items-center">
-                      {message.sender_id === me && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-1 top-1 z-10 hidden h-6 w-6 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
+                      {(message.sender_id === me || isOwner) && <button type="button" onClick={() => void deleteMessage(message.id)} disabled={deletingMessageId === message.id} className="absolute right-1 top-1 z-10 hidden h-6 w-6 items-center justify-center border border-line bg-bg text-fg hover:bg-fg hover:text-bg disabled:opacity-40 group-hover:flex" aria-label="Delete message"><Trash2 size={11} strokeWidth={1.25} /></button>}
                       <ByteSticker id={sticker.id} size={112} />
                       <span className="mt-1 text-[7px] uppercase tracking-[0.18em] text-muted">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
