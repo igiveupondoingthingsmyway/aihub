@@ -281,6 +281,12 @@ export default function Home() {
         return;
       }
     }
+    const { error: metadataError } = await supabase.from("post_media").delete().eq("post_id", post.id);
+    if (metadataError) {
+      setError(metadataError.message);
+      setDeleting("");
+      return;
+    }
     let deleteQuery = supabase.from("posts").delete().eq("id", post.id);
     if (!isOwner) deleteQuery = deleteQuery.eq("author_id", userId);
     const { error: deleteError } = await deleteQuery;
