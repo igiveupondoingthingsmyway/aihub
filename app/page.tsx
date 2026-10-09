@@ -60,7 +60,7 @@ export default function Home() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        window.location.href = "/auth/login";
+        window.location.href = "/login";
         return;
       }
       setUserId(user.id);
@@ -135,7 +135,7 @@ export default function Home() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
       return;
     }
 
@@ -159,7 +159,7 @@ export default function Home() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      window.location.href = "/auth/login";
+      window.location.href = "/login";
       return;
     }
 
