@@ -111,7 +111,7 @@ button, input, textarea, select { font-weight: 400; }
 .mobile-header { position:fixed; inset:0 0 auto; z-index:50; height:52px; padding-top:env(safe-area-inset-top); box-sizing:content-box; display:flex; align-items:center; justify-content:space-between; padding-left:16px; padding-right:16px; border-bottom:1px solid var(--line); background:var(--bg); }
 .mobile-logo { font-size:13px; font-weight:600; letter-spacing:.12em; }
 .mobile-header-icon { display:flex; width:36px; height:36px; align-items:center; justify-content:center; color:var(--muted); }
-.mobile-content { min-height:100dvh; padding-top:52px; padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
+.mobile-content { min-height:100dvh; padding-top:calc(52px + env(safe-area-inset-top)); padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
 .mobile-nav { position:fixed; inset:auto 0 0; z-index:50; height:62px; padding-bottom:env(safe-area-inset-bottom); display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--ink); background:var(--bg); }
 .mobile-nav a,.mobile-nav button { min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--mute); font-size:7px; letter-spacing:.12em; text-transform:uppercase; }
 .mobile-nav a.active { color:var(--ink); font-weight:600; }
