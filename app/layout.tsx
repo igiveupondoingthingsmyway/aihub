@@ -11,7 +11,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "SHB: GO IN. GO TIME.", template: "%s | SHB" },
+  title: { default: "SHB", template: "%s" },
   description: "SHB is a social hub for discovering people, conversations and useful AI tools.",
   icons: {
     icon: "/byte-icon-512.png.png",
