@@ -13,7 +13,6 @@ type Profile = {
   avatar_url: string;
   last_seen: string;
   banner_url: string;
-  role: "owner" | "admin" | "user";
 };
 
 type ProfilePost = {
