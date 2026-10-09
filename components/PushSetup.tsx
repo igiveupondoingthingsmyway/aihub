@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 function base64UrlToUint8Array(base64Url: string) {
@@ -14,6 +14,15 @@ export function PushSetup() {
   const [status, setStatus] = useState<"idle" | "loading" | "enabled" | "error">("idle");
   const [message, setMessage] = useState("");
   const [testing, setTesting] = useState(false);
+
+  // Keep the settings button in sync with the browser's saved permission.
+  // Permission survives reloads, while React component state does not.
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      setStatus("enabled");
+      setMessage("PUSH ENABLED");
+    }
+  }, []);
 
   async function sendTest() {
     setTesting(true);
