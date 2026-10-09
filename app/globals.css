@@ -340,9 +340,87 @@ button, input, textarea, select { font-weight: 400; }
 }
 
 
-/* Notification sheet: clear hierarchy and readable contrast */
+/* Notification sheet: separate surface above the feed */
+.notification-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.notification-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(0, 0, 0, .58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: notification-scrim-in .18s ease-out both;
+}
+
 .mobile-notification-overlay.sheet {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: min(55dvh, 520px);
+  max-height: 88dvh;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: var(--bg);
   color: var(--fg);
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, .28);
+  padding-top: env(safe-area-inset-top);
+  animation: notification-sheet-in .24s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes notification-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes notification-sheet-in {
+  from { transform: translateY(28px); opacity: .7; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (min-width: 768px) {
+  .notification-layer {
+    align-items: center;
+    padding: 24px;
+  }
+  .mobile-notification-overlay.sheet {
+    width: min(480px, 100%);
+    min-height: 0;
+    max-height: min(80dvh, 700px);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding-top: 0;
+    animation: notification-dialog-in .2s ease-out both;
+  }
+}
+
+@keyframes notification-dialog-in {
+  from { transform: translateY(8px) scale(.985); opacity: .7; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-scrim,
+  .mobile-notification-overlay.sheet {
+    animation: none;
+  }
 }
 
 .mobile-notification-overlay .sheet-bar {
