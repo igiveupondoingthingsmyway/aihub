@@ -55,7 +55,7 @@ export default function AdminPage() {
     })));
     if (ownRole.role === "owner") {
       const [{ data: postRows, error: postError }, { data: commentRows, error: commentError }, { data: messageRows, error: messageError }] = await Promise.all([
-        supabase.from("posts").select("id,author_id,content,created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("posts").select("id,author_id,content,created_at").order("created_at", { ascending: false }),
         supabase.from("post_comments").select("id,post_id,author_id,content,created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("messages").select("id,sender_id,content,created_at").order("created_at", { ascending: false }).limit(200),
       ]);
@@ -100,6 +100,8 @@ export default function AdminPage() {
       const { error } = await supabase.storage.from("post-media").remove(mediaRows.map((item) => item.storage_path));
       if (error) { setNotice(error.message); setWorkingId(null); return; }
     }
+    const { error: metadataError } = await supabase.from("post_media").delete().eq("post_id", post.id);
+    if (metadataError) { setNotice(metadataError.message); setWorkingId(null); return; }
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
     if (error) setNotice(error.message);
     else { setPosts((current) => current.filter((item) => item.id !== post.id)); setComments((current) => current.filter((item) => item.post_id !== post.id)); setNotice("POST DELETED."); }
@@ -199,7 +201,7 @@ export default function AdminPage() {
           <div className="mb-5 border-b border-line pb-4">
             <p className="text-[9px] uppercase tracking-[0.2em] text-muted">Owner only</p>
             <h2 className="mt-2 text-2xl uppercase tracking-[-0.04em]">Content moderation</h2>
-            <p className="mt-2 text-[10px] leading-5 text-muted">Delete any post, comment, or message. Likes and user accounts are not changed here. Latest 200 items per category are shown.</p>
+            <p className="mt-2 text-[10px] leading-5 text-muted">Delete any post, comment, or message, including attached post and chat images. Likes and user accounts are not changed here.</p>
           </div>
           <div className="mb-10">
             <h3 className="mb-3 text-xs uppercase tracking-[0.15em]">Posts · {posts.length}</h3>
