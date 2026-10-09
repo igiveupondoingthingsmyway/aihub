@@ -6,7 +6,7 @@ import { Heart, MessageCircle, Send, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = { id: string; username: string; avatar_url: string };
-type Post = { id:string; author_id:string; content:string; created_at:string; author:Profile; likeCount:number; commentCount:number; liked:boolean };
+type Post = { id:string; author_id:string; content:string; created_at:string; author:Profile; likeCount:number; commentCount:number; liked:boolean; mediaUrls:string[] };
 type Comment = { id:string; post_id:string; author_id:string; content:string; created_at:string; author:Profile };
 
 const time = (v:string) => { const m=Math.max(0,Math.floor((Date.now()-new Date(v).getTime())/60000)); return m<1?"NOW":m<60?m+"M":m<1440?Math.floor(m/60)+"H":Math.floor(m/1440)+"D"; };
@@ -24,14 +24,16 @@ export function MobileFeed() {
     const {data:rows,error:e}=await supabase.from("posts").select("id,author_id,content,created_at,profiles!posts_author_id_fkey(id,username,avatar_url)").order("created_at",{ascending:false}).limit(50);
     if(e){setError(e.message);setLoading(false);return;}
     const ids=(rows??[]).map((r:any)=>r.id);
-    const [{data:likes},{data:cr}]=await Promise.all([
+    const [{data:likes},{data:cr},{data:mediaRows,error:mediaError}]=await Promise.all([
       ids.length?supabase.from("post_likes").select("post_id,user_id").in("post_id",ids):Promise.resolve({data:[] as any[]}),
-      ids.length?supabase.from("post_comments").select("id,post_id,author_id,content,created_at,profiles!post_comments_author_id_fkey(id,username,avatar_url)").in("post_id",ids).order("created_at",{ascending:true}):Promise.resolve({data:[] as any[]})
+      ids.length?supabase.from("post_comments").select("id,post_id,author_id,content,created_at,profiles!post_comments_author_id_fkey(id,username,avatar_url)").in("post_id",ids).order("created_at",{ascending:true}):Promise.resolve({data:[] as any[]}),
+      ids.length?supabase.from("post_media").select("post_id,storage_path,position").in("post_id",ids).order("position",{ascending:true}):Promise.resolve({data:[] as any[],error:null})
     ]);
+    if(mediaError) setError("Could not load post images: "+mediaError.message);
     const grouped:Record<string,Comment[]>={};
     (cr??[]).forEach((r:any)=>{const a=Array.isArray(r.profiles)?r.profiles[0]:r.profiles;if(a)(grouped[r.post_id]??=[]).push({...r,author:a});});
     setComments(grouped);
-    setPosts((rows??[]).map((r:any)=>{const a=Array.isArray(r.profiles)?r.profiles[0]:r.profiles;return {id:r.id,author_id:r.author_id,content:r.content,created_at:r.created_at,author:a,likeCount:(likes??[]).filter((x:any)=>x.post_id===r.id).length,commentCount:(cr??[]).filter((x:any)=>x.post_id===r.id).length,liked:(likes??[]).some((x:any)=>x.post_id===r.id&&x.user_id===user.id)}}).filter((p:any)=>p.author));
+    setPosts((rows??[]).map((r:any)=>{const a=Array.isArray(r.profiles)?r.profiles[0]:r.profiles;return {id:r.id,author_id:r.author_id,content:r.content,created_at:r.created_at,author:a,likeCount:(likes??[]).filter((x:any)=>x.post_id===r.id).length,commentCount:(cr??[]).filter((x:any)=>x.post_id===r.id).length,liked:(likes??[]).some((x:any)=>x.post_id===r.id&&x.user_id===user.id),mediaUrls:(mediaRows??[]).filter((m:any)=>m.post_id===r.id).map((m:any)=>supabase.storage.from("post-media").getPublicUrl(m.storage_path).data.publicUrl)}}).filter((p:any)=>p.author));
     setLoading(false);
   },[supabase]);
 
@@ -49,7 +51,12 @@ export function MobileFeed() {
     {posts.length===0?<div className="mobile-empty">NO POSTS YET.<small>BE THE FIRST ONE.</small></div>:
       <div className="mobile-post-list">{posts.map(p=><article className="mobile-post" key={p.id}>
         <div className="mobile-post-head"><Link href={"/profile/"+p.author.username} className="mobile-user">{p.author.avatar_url?<img src={p.author.avatar_url} alt=""/>:<span>{p.author.username[0]?.toUpperCase()}</span>}<b>@{p.author.username}</b></Link><span>{time(p.created_at)}</span>{p.author_id===userId&&<button onClick={()=>void delPost(p)} aria-label="Delete post"><Trash2 size={13}/></button>}</div>
-        <p className="mobile-post-text">{p.content}</p>
+        {p.content.trim()&&<p className="mobile-post-text">{p.content}</p>}
+        {p.mediaUrls.length>0&&<div className="mt-4 grid gap-2">
+          {p.mediaUrls.map((url,index)=><a key={url} href={url} target="_blank" rel="noreferrer" className="block w-full overflow-hidden border border-line bg-fg/5">
+            <img src={url} alt={"Post image "+(index+1)} loading="lazy" decoding="async" className="block h-auto max-h-[70vh] w-full object-contain" />
+          </a>)}
+        </div>}
         <div className="mobile-post-actions"><button onClick={()=>void like(p)} className={p.liked?"liked":""}><Heart size={16} fill={p.liked?"currentColor":"none"}/>{p.likeCount}</button><button onClick={()=>setOpen(x=>({...x,[p.id]:!x[p.id]}))}><MessageCircle size={16}/>{p.commentCount}</button></div>
         {open[p.id]&&<div className="mobile-comments">{(comments[p.id]??[]).map(c=><div className="mobile-comment" key={c.id}><b>@{c.author.username}</b><span>{c.content}</span></div>)}<div className="mobile-comment-input"><input value={comment[p.id]??""} onChange={e=>setComment(x=>({...x,[p.id]:e.target.value.slice(0,2000)}))} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();void addComment(p.id)}}} placeholder="COMMENT..."/><button onClick={()=>void addComment(p.id)}><Send size={13}/></button></div></div>}
       </article>)}</div>}
