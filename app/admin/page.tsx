@@ -227,7 +227,7 @@ export default function AdminPage() {
             <h3 className="mb-3 text-xs uppercase tracking-[0.15em]">Messages · {messages.length}</h3>
             <div className="border-y border-line">
               {messages.map((message) => <div key={message.id} className="flex items-start justify-between gap-4 border-b border-line py-4 last:border-0">
-                <div className="min-w-0"><p className="whitespace-pre-wrap break-words text-xs">{message.content.match(/^\\[\\[image:(.+)\\]\\]$/) ? "[Image attachment]" : message.content}</p><p className="mt-2 text-[8px] text-muted">{message.id} · sender {message.sender_id} · {new Date(message.created_at).toLocaleString()}</p></div>
+                <div className="min-w-0"><p className="whitespace-pre-wrap break-words text-xs">{message.content.startsWith("[[image:") ? "[Image attachment]" : message.content}</p><p className="mt-2 text-[8px] text-muted">{message.id} · sender {message.sender_id} · {new Date(message.created_at).toLocaleString()}</p></div>
                 <button type="button" onClick={() => void deleteContentMessage(message)} disabled={workingId === message.id} className="shrink-0 border border-line px-3 py-2 text-[9px] uppercase hover:bg-fg hover:text-bg disabled:opacity-40">{workingId === message.id ? "Deleting…" : "Delete"}</button>
               </div>)}
               {messages.length === 0 && <p className="py-4 text-xs text-muted">No messages.</p>}
