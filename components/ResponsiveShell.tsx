@@ -12,7 +12,8 @@ export function ResponsiveShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const segment = pathname.split("/").filter(Boolean).pop();
-    document.title = segment ? segment.replace(/-/g, " ").toLowerCase() : "SHB";
+    const section = segment ? segment.replace(/-/g, " ").toLowerCase() : "";
+    document.title = section ? `SHB | ${section}` : "SHB";
   }, [pathname]);
 
   useEffect(() => {
