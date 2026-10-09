@@ -13,6 +13,7 @@ type Profile = {
   avatar_url: string;
   last_seen: string;
   banner_url: string;
+  role: "owner" | "admin" | "user";
 };
 
 type ProfilePost = {
@@ -39,6 +40,7 @@ function formatTime(value: string) {
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [me, setMe] = useState<string | null>(null);
+  const [profileRole, setProfileRole] = useState<"owner" | "admin" | "user">("user");
   const [friendCount, setFriendCount] = useState(0);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [status, setStatus] = useState("");
@@ -67,6 +69,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         }
 
         setProfile(data);
+        const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", data.id).maybeSingle();
+        setProfileRole(roleRow?.role === "owner" || roleRow?.role === "admin" ? roleRow.role : "user");
 
         if (user && user.id !== data.id) {
           const { data: friendship } = await supabase.from("friendships").select("friend_id").eq("user_id", user.id).eq("friend_id", data.id).maybeSingle();
@@ -235,7 +239,14 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 </div>
                 <div className="min-w-0">
                   <p className="text-[9px] uppercase tracking-[0.18em] text-muted">Active member</p>
-                  <h1 className="mt-1 truncate text-3xl tracking-[-0.06em] sm:text-5xl">@{profile.username}</h1>
+                  <div className="mt-1 flex flex-wrap items-center gap-3">
+                    <h1 className="truncate text-3xl tracking-[-0.06em] sm:text-5xl">@{profile.username}</h1>
+                    {profileRole !== "user" && (
+                      <span className="inline-flex items-center gap-1.5 border border-line px-2 py-1 text-[8px] uppercase tracking-[0.14em]">
+                        {profileRole === "owner" ? "♛ Owner" : "◆ Admin"}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-muted">{profile.bio || "No bio yet."}</p>
@@ -300,8 +311,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 <span className="text-[9px] uppercase tracking-[0.12em]">Online</span>
               </div>
               <div className="flex items-center justify-between border-b border-line py-4">
-                <span className="text-[9px] uppercase tracking-[0.14em] text-muted">Member</span>
-                <span className="text-[9px] uppercase tracking-[0.12em]">SHB</span>
+                <span className="text-[9px] uppercase tracking-[0.14em] text-muted">Member SHB</span>
+                <span className="text-[9px] uppercase tracking-[0.12em]">{profileRole === "owner" ? "Owner" : profileRole === "admin" ? "Admin" : "Member"}</span>
               </div>
               <div className="flex items-center justify-between py-4">
                 <span className="text-[9px] uppercase tracking-[0.14em] text-muted">Posts</span>
