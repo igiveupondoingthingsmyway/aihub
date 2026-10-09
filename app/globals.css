@@ -346,9 +346,12 @@ button, input, textarea, select { font-weight: 400; }
   inset: 0;
   z-index: 200;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   isolation: isolate;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
 }
 
 .notification-scrim {
@@ -371,18 +374,20 @@ button, input, textarea, select { font-weight: 400; }
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
+  height: 100dvh;
   min-width: 0;
-  min-height: min(55dvh, 520px);
-  max-height: 88dvh;
+  min-height: 0;
+  max-height: none;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-bottom: 0;
-  border-radius: 18px 18px 0 0;
+  border: 0;
+  border-radius: 0;
   background: var(--bg);
   color: var(--fg);
-  box-shadow: 0 -18px 60px rgba(0, 0, 0, .28);
+  box-shadow: none;
   padding-top: env(safe-area-inset-top);
-  animation: notification-sheet-in .24s cubic-bezier(.2,.8,.2,1) both;
+  padding-bottom: env(safe-area-inset-bottom);
+  animation: notification-sheet-in .2s ease-out both;
 }
 
 @keyframes notification-scrim-in {
@@ -391,22 +396,26 @@ button, input, textarea, select { font-weight: 400; }
 }
 
 @keyframes notification-sheet-in {
-  from { transform: translateY(28px); opacity: .7; }
-  to { transform: translateY(0); opacity: 1; }
+  from { opacity: .75; }
+  to { opacity: 1; }
 }
 
 @media (min-width: 768px) {
   .notification-layer {
     align-items: center;
+    justify-content: center;
     padding: 24px;
+    height: 100%;
   }
   .mobile-notification-overlay.sheet {
     width: min(480px, 100%);
+    height: auto;
     min-height: 0;
     max-height: min(80dvh, 700px);
     border: 1px solid var(--line);
     border-radius: 18px;
     padding-top: 0;
+    padding-bottom: 0;
     animation: notification-dialog-in .2s ease-out both;
   }
 }
