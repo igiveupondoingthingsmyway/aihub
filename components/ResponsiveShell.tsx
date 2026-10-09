@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { MobileShell } from "@/components/MobileShell";
+import { PushAutoRestore } from "@/components/PushAutoRestore";
 
 export function ResponsiveShell({ children }: { children: ReactNode }) {
   const [mobile, setMobile] = useState(false);
@@ -15,18 +16,23 @@ export function ResponsiveShell({ children }: { children: ReactNode }) {
     return () => media.removeEventListener("change", update);
   }, []);
 
-  if (mobile) return <MobileShell>{children}</MobileShell>;
-
   return (
-    <div className="desktop-shell">
-      <Navbar />
-      {children}
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-10 text-[11px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:justify-between sm:px-8">
-          <span>SHB / 2026</span>
-          <span>Pricing data may change. Check official sites.</span>
+    <>
+      <PushAutoRestore />
+      {mobile ? (
+        <MobileShell>{children}</MobileShell>
+      ) : (
+        <div className="desktop-shell">
+          <Navbar />
+          {children}
+          <footer className="border-t border-line">
+            <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-10 text-[11px] uppercase tracking-[0.12em] text-muted sm:flex-row sm:justify-between sm:px-8">
+              <span>SHB / 2026</span>
+              <span>Pricing data may change. Check official sites.</span>
+            </div>
+          </footer>
         </div>
-      </footer>
-    </div>
+      )}
+    </>
   );
 }
