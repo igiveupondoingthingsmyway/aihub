@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Send, Trash2 } from "lucide-react";
+import { Heart, ImagePlus, MessageCircle, Send, Trash2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -29,6 +29,7 @@ type Post = {
   likeCount: number;
   commentCount: number;
   liked: boolean;
+  mediaUrls: string[];
 };
 
 function formatTime(value: string) {
@@ -55,6 +56,7 @@ export default function Home() {
   const [deleting, setDeleting] = useState("");
   const [deletingComment, setDeletingComment] = useState("");
   const [error, setError] = useState("");
+  const [postImages, setPostImages] = useState<File[]>([]);
 
   const loadFeed = useCallback(async () => {
     try {
@@ -76,12 +78,15 @@ export default function Home() {
       const postRows = rows ?? [];
       const ids = postRows.map((row: any) => row.id);
 
-      const [{ data: likes }, { data: commentRows }] = await Promise.all([
+      const [{ data: likes }, { data: commentRows }, { data: mediaRows }] = await Promise.all([
         ids.length
           ? supabase.from("post_likes").select("post_id, user_id").in("post_id", ids)
           : Promise.resolve({ data: [] as any[] }),
         ids.length
           ? supabase.from("post_comments").select("id, post_id, author_id, content, created_at, profiles!post_comments_author_id_fkey(id, username, avatar_url)").in("post_id", ids).order("created_at", { ascending: true })
+          : Promise.resolve({ data: [] as any[] }),
+        ids.length
+          ? supabase.from("post_media").select("post_id, storage_path, position").in("post_id", ids).order("position", { ascending: true })
           : Promise.resolve({ data: [] as any[] }),
       ]);
 
@@ -112,6 +117,9 @@ export default function Home() {
           likeCount: (likes ?? []).filter((like: any) => like.post_id === row.id).length,
           commentCount: (commentRows ?? []).filter((comment: any) => comment.post_id === row.id).length,
           liked: (likes ?? []).some((like: any) => like.post_id === row.id && like.user_id === user.id),
+          mediaUrls: (mediaRows ?? [])
+            .filter((media: any) => media.post_id === row.id)
+            .map((media: any) => supabase.storage.from("post-media").getPublicUrl(media.storage_path).data.publicUrl),
         };
       }).filter((post) => post.author));
     } catch (e: any) {
@@ -129,7 +137,15 @@ export default function Home() {
 
   async function createPost() {
     const content = commentText["__post__"]?.trim() ?? "";
-    if (!content || posting) return;
+    if ((!content && postImages.length === 0) || posting) return;
+    if (postImages.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+      setError("Choose image files up to 5 MB each.");
+      return;
+    }
+    if (postImages.length > 4) {
+      setError("You can attach up to 4 images per post.");
+      return;
+    }
     setPosting(true);
     setError("");
 
@@ -139,11 +155,43 @@ export default function Home() {
       return;
     }
 
-    const { error: insertError } = await supabase.from("posts").insert({ author_id: user.id, content });
+    const { data: createdPost, error: insertError } = await supabase
+      .from("posts")
+      .insert({ author_id: user.id, content: content || " " })
+      .select("id")
+      .single();
 
-    if (insertError) setError(insertError.message);
-    else {
+    if (insertError) {
+      setError(insertError.message);
+    } else if (createdPost) {
+      let uploadError = "";
+      for (let position = 0; position < postImages.length; position++) {
+        const file = postImages[position];
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const storagePath = user.id + "/" + createdPost.id + "/" + crypto.randomUUID() + "-" + safeName;
+        const { error: storageError } = await supabase.storage.from("post-media").upload(storagePath, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+        if (storageError) {
+          uploadError = storageError.message;
+          break;
+        }
+        const { error: mediaError } = await supabase.from("post_media").insert({
+          post_id: createdPost.id,
+          storage_path: storagePath,
+          media_type: "image",
+          position,
+        });
+        if (mediaError) {
+          await supabase.storage.from("post-media").remove([storagePath]);
+          uploadError = mediaError.message;
+          break;
+        }
+      }
       setCommentText((current) => ({ ...current, __post__: "" }));
+      setPostImages([]);
+      if (uploadError) setError("Post published, but an image could not be uploaded: " + uploadError);
       await loadFeed();
     }
 
@@ -283,9 +331,30 @@ export default function Home() {
           rows={4}
           className="block w-full resize-none bg-transparent px-5 py-5 text-sm leading-7 outline-none placeholder:text-muted"
         />
+        {postImages.length > 0 && (
+          <div className="flex flex-wrap gap-2 border-t border-line px-5 py-3">
+            {postImages.map((file, index) => (
+              <div key={file.name + file.size + index} className="flex items-center gap-2 border border-line px-2 py-1 text-[9px]">
+                <span className="max-w-40 truncate">{file.name}</span>
+                <button type="button" onClick={() => setPostImages((current) => current.filter((_, i) => i !== index))} aria-label={"Remove " + file.name}><X size={12}/></button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-line px-5 py-3">
-          <span className="text-[9px] uppercase tracking-[0.14em] text-muted">{(commentText["__post__"] ?? "").length} / 5000</span>
-          <button type="button" onClick={createPost} disabled={!(commentText["__post__"] ?? "").trim() || posting} className="flex items-center gap-2 border border-fg px-4 py-2 text-[9px] uppercase tracking-[0.16em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30">
+          <div className="flex items-center gap-3">
+            <label className="flex cursor-pointer items-center gap-2 text-[9px] uppercase tracking-[0.14em] text-muted hover:text-fg">
+              <ImagePlus size={14} strokeWidth={1.3} />
+              Add images
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple className="sr-only" onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                setPostImages((current) => [...current, ...picked].slice(0, 4));
+                e.currentTarget.value = "";
+              }} />
+            </label>
+            <span className="text-[9px] uppercase tracking-[0.14em] text-muted">{(commentText["__post__"] ?? "").length} / 5000</span>
+          </div>
+          <button type="button" onClick={createPost} disabled={(!(commentText["__post__"] ?? "").trim() && postImages.length === 0) || posting} className="flex items-center gap-2 border border-fg px-4 py-2 text-[9px] uppercase tracking-[0.16em] transition-colors hover:bg-fg hover:text-bg disabled:cursor-not-allowed disabled:opacity-30">
             <Send size={12} strokeWidth={1.4} />
             {posting ? "Posting" : "Post"}
           </button>
@@ -327,7 +396,16 @@ export default function Home() {
                   )}
                 </div>
 
-                <p className="mt-5 whitespace-pre-wrap break-words text-sm leading-7">{post.content}</p>
+                {post.content.trim() && <p className="mt-5 whitespace-pre-wrap break-words text-sm leading-7">{post.content}</p>}
+                {post.mediaUrls.length > 0 && (
+                  <div className={"mt-5 grid gap-2 " + (post.mediaUrls.length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                    {post.mediaUrls.map((url, index) => (
+                      <a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden border border-line bg-fg/5">
+                        <img src={url} alt={"Post image " + (index + 1)} loading="lazy" className="max-h-[560px] w-full object-contain" />
+                      </a>
+                    ))}
+                  </div>
+                )}
 
                 <div className="mt-5 flex items-center gap-5">
                   <button type="button" onClick={() => toggleLike(post)} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.12em] text-muted transition-colors hover:text-fg">
