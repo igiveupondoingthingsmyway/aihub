@@ -67,7 +67,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
           return;
         }
 
-        setProfile(data);
+        setProfile({ ...data, role: "user" });
         const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", data.id).maybeSingle();
         setProfileRole(roleRow?.role === "owner" || roleRow?.role === "admin" ? roleRow.role : "user");
 
