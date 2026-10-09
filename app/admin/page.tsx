@@ -56,8 +56,8 @@ export default function AdminPage() {
     if (ownRole.role === "owner") {
       const [{ data: postRows, error: postError }, { data: commentRows, error: commentError }, { data: messageRows, error: messageError }] = await Promise.all([
         supabase.from("posts").select("id,author_id,content,created_at").order("created_at", { ascending: false }),
-        supabase.from("post_comments").select("id,post_id,author_id,content,created_at").order("created_at", { ascending: false }).limit(200),
-        supabase.from("messages").select("id,sender_id,content,created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("post_comments").select("id,post_id,author_id,content,created_at").order("created_at", { ascending: false }),
+        supabase.from("messages").select("id,sender_id,content,created_at").order("created_at", { ascending: false }),
       ]);
       if (postError || commentError || messageError) {
         setNotice(postError?.message ?? commentError?.message ?? messageError?.message ?? "Could not load content.");
