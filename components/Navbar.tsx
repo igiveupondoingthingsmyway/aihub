@@ -93,6 +93,20 @@ export function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!notificationOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNotificationOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [notificationOpen]);
+
   async function markRead(id: string) {
     await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
     setNotifications(items => items.filter(item => item.id !== id));
