@@ -46,6 +46,7 @@ function formatTime(value: string) {
 export default function Home() {
   const supabase = createClient();
   const [userId, setUserId] = useState("");
+  const [isOwner, setIsOwner] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
@@ -66,6 +67,8 @@ export default function Home() {
         return;
       }
       setUserId(user.id);
+      const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
+      setIsOwner(roleRow?.role === "owner");
 
       const { data: rows, error: postsError } = await supabase
         .from("posts")
@@ -237,11 +240,9 @@ export default function Home() {
     setDeletingComment(comment.id);
     setError("");
 
-    const { error: deleteError } = await supabase
-      .from("post_comments")
-      .delete()
-      .eq("id", comment.id)
-      .eq("author_id", userId);
+    let deleteQuery = supabase.from("post_comments").delete().eq("id", comment.id);
+    if (!isOwner) deleteQuery = deleteQuery.eq("author_id", userId);
+    const { error: deleteError } = await deleteQuery;
 
     if (deleteError) setError(deleteError.message);
     else {
@@ -265,11 +266,24 @@ export default function Home() {
     setDeleting(post.id);
     setError("");
 
-    const { error: deleteError } = await supabase
-      .from("posts")
-      .delete()
-      .eq("id", post.id)
-      .eq("author_id", userId);
+    const { data: mediaRows, error: mediaQueryError } = await supabase
+      .from("post_media").select("storage_path").eq("post_id", post.id);
+    if (mediaQueryError) {
+      setError(mediaQueryError.message);
+      setDeleting("");
+      return;
+    }
+    if (mediaRows?.length) {
+      const { error: storageError } = await supabase.storage.from("post-media").remove(mediaRows.map((item) => item.storage_path));
+      if (storageError) {
+        setError(storageError.message);
+        setDeleting("");
+        return;
+      }
+    }
+    let deleteQuery = supabase.from("posts").delete().eq("id", post.id);
+    if (!isOwner) deleteQuery = deleteQuery.eq("author_id", userId);
+    const { error: deleteError } = await deleteQuery;
 
     if (deleteError) setError(deleteError.message);
     else {
@@ -389,7 +403,7 @@ export default function Home() {
                     <span className="text-[9px] uppercase tracking-[0.12em] text-muted">/ {formatTime(post.created_at)}</span>
                   </Link>
 
-                  {post.author_id === userId && (
+                  {(post.author_id === userId || isOwner) && (
                     <button type="button" onClick={() => deletePost(post)} disabled={deleting === post.id} aria-label="Delete post" title="Delete post" className="text-muted transition-colors hover:text-fg disabled:opacity-30">
                       <Trash2 size={15} strokeWidth={1.25} />
                     </button>
@@ -454,7 +468,7 @@ export default function Home() {
                               </div>
                             </div>
 
-                            {comment.author_id === userId && (
+                            {(comment.author_id === userId || isOwner) && (
                               <button
                                 type="button"
                                 onClick={() => deleteComment(comment)}
