@@ -13,7 +13,24 @@ export function ResponsiveShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const segment = pathname.split("/").filter(Boolean).pop();
     const section = segment ? segment.replace(/-/g, " ").toLowerCase() : "";
-    document.title = section ? `SHB | ${section}` : "SHB";
+    const title = section ? `SHB | ${section}` : "SHB";
+
+    const applyTitle = () => {
+      if (document.title !== title) document.title = title;
+    };
+
+    applyTitle();
+
+    // Next.js may re-apply route metadata after hydration/navigation.
+    // Keep the section title in place if that happens.
+    const observer = new MutationObserver(applyTitle);
+    observer.observe(document.head, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
   }, [pathname]);
 
   useEffect(() => {
