@@ -317,7 +317,7 @@ export default function ChatPage() {
     const { error: deleteError } = await deleteQuery;
     if (deleteError) setError(deleteError.message);
     else {
-      const imageMatch = targetMessage?.content.match(/^\\[\\[image:(.+)\\]\\]$/);
+      const imagePath = targetMessage?.content.startsWith("[[image:") ? targetMessage.content.slice(8, -2) : null;
       if (imagePath) {
         const { error: storageError } = await supabase.storage.from("chat-media").remove([imagePath]);
         if (storageError) console.warn("Could not remove chat image:", storageError.message);
