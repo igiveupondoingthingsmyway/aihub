@@ -314,7 +314,7 @@ export default function ChatPage() {
     const targetMessage = messages.find((message) => message.id === messageId);
     let deleteQuery = supabase.from("messages").delete().eq("id", messageId);
     if (!isOwner) deleteQuery = deleteQuery.eq("sender_id", me);
-    const { error: deleteError } = await supabase.from("messages").delete().eq("id", messageId).match(isOwner ? {} : { sender_id: me });
+    const { error: deleteError } = await deleteQuery;
     if (deleteError) setError(deleteError.message);
     else {
       const imageMatch = targetMessage?.content.match(/^\\[\\[image:(.+)\\]\\]$/);
