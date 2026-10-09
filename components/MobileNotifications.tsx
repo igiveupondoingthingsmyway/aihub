@@ -82,6 +82,20 @@ export function MobileNotifications() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
   async function read(id: string) {
     await createClient().from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
     void load();
@@ -118,7 +132,14 @@ export function MobileNotifications() {
       </button>
 
       {open && (
-        <section className="mobile-notification-overlay sheet" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
+        <div className="notification-layer">
+          <button
+            className="notification-scrim"
+            type="button"
+            aria-label="Close notifications"
+            onClick={() => setOpen(false)}
+          />
+          <section className="mobile-notification-overlay sheet" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
           <header className="sheet-bar">
             <button className="sheet-close" type="button" onClick={() => setOpen(false)} aria-label="Close notifications">
               <X size={19} strokeWidth={1.25} />
@@ -155,7 +176,8 @@ export function MobileNotifications() {
               <div className="mobile-empty">NOTHING NEW.</div>
             )}
           </div>
-        </section>
+          </section>
+        </div>
       )}
     </>
   );
