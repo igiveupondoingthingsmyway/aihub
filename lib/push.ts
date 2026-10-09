@@ -71,5 +71,5 @@ export async function sendPushNotification(input: {
     }
   }
 
-  return { sent, skipped: false };
+  return { sent, skipped: false, subscriptions: (subscriptions ?? []).length };
 }
