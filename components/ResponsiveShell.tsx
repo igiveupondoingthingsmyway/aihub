@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { MobileShell } from "@/components/MobileShell";
 import { PushAutoRestore } from "@/components/PushAutoRestore";
+import { NotesDrawer } from "@/components/NotesDrawer";
 
 export function ResponsiveShell({ children }: { children: ReactNode }) {
   const [mobile, setMobile] = useState(false);
@@ -44,6 +45,7 @@ export function ResponsiveShell({ children }: { children: ReactNode }) {
   return (
     <>
       <PushAutoRestore />
+      <NotesDrawer />
       {mobile ? (
         <MobileShell>{children}</MobileShell>
       ) : (
