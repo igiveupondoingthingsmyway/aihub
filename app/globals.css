@@ -631,3 +631,32 @@ button, input, textarea, select { font-weight: 400; }
  .notes-byte svg{width:36px}
 }
 @media(prefers-reduced-motion:reduce){.notes-drawer{transition:none}}
+
+
+/* Notes visibility and layering fixes */
+.notes-toggle { z-index: 121 !important; }
+.notes-scrim { z-index: 118 !important; }
+.notes-drawer { z-index: 120 !important; isolation: isolate; overflow: hidden; }
+.notes-list-view[hidden],
+.notes-editor[hidden] { display: none !important; }
+.notes-body { min-width: 0; overflow: hidden; }
+.notes-list-view,
+.notes-editor { min-width: 0; }
+.notes-field-label { min-width: 0; line-height: 1.5; }
+.notes-title-input,
+.notes-textarea { box-sizing: border-box; min-width: 0; max-width: 100%; }
+.notes-textarea { display: block; line-height: 1.7; overflow-wrap: anywhere; }
+.notes-byte { flex: 0 0 auto; min-width: 0; }
+.notes-byte > div { min-width: 0; }
+.notes-byte p { overflow-wrap: anywhere; }
+@media (min-width: 768px) {
+  .notes-body { grid-template-columns: minmax(0, .85fr) minmax(0, 1.25fr); }
+}
+@media (max-width: 767px) {
+  .notes-drawer { inset: 0; height: 100dvh; }
+  .notes-body { overflow-y: auto; }
+  .notes-list-view,
+  .notes-editor { flex: 1 1 auto; overflow-y: auto; }
+  .notes-textarea { flex: 1 1 auto; min-height: min(38vh, 300px); }
+  .notes-actions { gap: 6px; }
+}
