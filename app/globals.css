@@ -880,3 +880,169 @@ button, input, textarea, select {
 @media (prefers-reduced-motion: reduce) {
   :where(a, button, input, textarea, select, [role="button"]) { transition: none; }
 }
+
+
+/* Roundness pass 2: selectors matched to the actual SHB React components */
+@media (max-width: 767px) {
+  .mobile-header {
+    border-bottom-color: transparent !important;
+    background: rgba(11,11,11,.88) !important;
+    backdrop-filter: blur(18px);
+  }
+  .mobile-header-icon,
+  .mobile-notification-button { border-radius: 50% !important; }
+
+  .mobile-nav {
+    inset-inline: 10px !important;
+    bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
+    height: 62px !important;
+    padding-bottom: 0 !important;
+    border: 1px solid #292929 !important;
+    border-radius: 23px !important;
+    background: rgba(17,17,17,.92) !important;
+    backdrop-filter: blur(22px);
+    box-shadow: 0 8px 30px rgba(0,0,0,.32);
+  }
+  .mobile-nav a.active::before { display: none !important; }
+  .mobile-create-button {
+    width: 42px !important;
+    height: 42px !important;
+    margin: auto !important;
+    border: 1px solid #333 !important;
+    border-radius: 15px !important;
+  }
+  .mobile-content { padding-bottom: calc(88px + env(safe-area-inset-bottom)) !important; }
+
+  .mobile-post-list { padding: 10px 12px 22px !important; }
+  .mobile-post {
+    margin: 0 0 12px !important;
+    padding: 16px !important;
+    border: 1px solid #292929 !important;
+    border-radius: 20px !important;
+    background: #101010 !important;
+  }
+  .mobile-post:last-child { border-bottom: 1px solid #292929 !important; }
+  .mobile-post-text { margin-top: 13px !important; }
+  .mobile-post-actions { gap: 8px !important; }
+  .mobile-post-actions button {
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid #292929;
+    border-radius: 999px;
+    background: #141414;
+  }
+  .mobile-comments {
+    border-left: 0 !important;
+    border-top: 1px solid #292929;
+    border-radius: 14px;
+    padding: 13px 0 0 !important;
+  }
+  .mobile-comment-input {
+    border: 1px solid #292929 !important;
+    border-radius: 14px !important;
+    padding: 6px 8px !important;
+  }
+
+  .mobile-network-search {
+    border-color: #292929 !important;
+    border-radius: 15px !important;
+    background: #101010;
+  }
+  .mobile-search-results,
+  .mobile-chat-list,
+  .mobile-profile-card {
+    overflow: hidden;
+    border: 1px solid #292929 !important;
+    border-radius: 20px !important;
+    background: #101010;
+  }
+  .mobile-search-results { margin-inline: 12px !important; }
+  .mobile-person, .mobile-row { border-bottom-color: #242424 !important; }
+  .mobile-chat-list { margin-inline: 12px !important; padding-inline: 13px; }
+  .mobile-chat-row { padding-inline: 0 !important; border-bottom-color: #242424 !important; }
+  .mobile-avatar, .mobile-profile-avatar { border-radius: 50% !important; }
+  .mobile-profile-card { margin-inline: 12px !important; }
+  .mobile-profile-head { border-top-color: #292929 !important; }
+  .mobile-form input, .mobile-form textarea {
+    border-color: #292929 !important;
+    border-radius: 14px !important;
+    background: #101010 !important;
+    padding: 14px !important;
+  }
+  .mobile-form button, .mobile-form > a { border-radius: 14px !important; }
+  .mobile-empty, .mobile-error {
+    margin-inline: 12px !important;
+    border: 1px solid #292929 !important;
+    border-radius: 20px !important;
+    background: #101010;
+  }
+  .mobile-tabs { border-bottom-color: #292929 !important; }
+  .mobile-tabs button { border-right-color: #292929 !important; }
+  .mobile-tools-page section > div.grid > a,
+  .mobile-tools-page section > div.grid > div {
+    border-radius: 18px !important;
+    overflow: hidden;
+  }
+  .mobile-chat-page form input { border-radius: 999px !important; }
+  .mobile-chat-page form button { border-radius: 15px !important; }
+
+  .mobile-overlay,
+  .mobile-notification-overlay { background: #0b0b0b !important; }
+  .mobile-overlay-header,
+  .mobile-notification-panel-header { border-bottom-color: #292929 !important; }
+  .mobile-create-form textarea { border-radius: 18px 18px 0 0 !important; }
+  .mobile-create-meta { border-top-color: #292929 !important; }
+  .mobile-create-meta button { border-radius: 15px 0 0 0 !important; }
+  .notification-layer .sheet {
+    border-radius: 24px 24px 0 0 !important;
+    overflow: hidden;
+  }
+  .notification-layer .sheet-bar { border-bottom-color: #292929 !important; }
+  .notification-layer .sheet-close { border-radius: 50% !important; }
+}
+
+/* Desktop: soften actual bordered cards and interactive surfaces, not every divider */
+.desktop-shell main article,
+.desktop-shell main [class~="border-line"].border,
+.desktop-shell main [class*="rounded-none"][class*="border"] {
+  border-radius: 20px;
+}
+.desktop-shell main input,
+.desktop-shell main textarea,
+.desktop-shell main select {
+  border-radius: 14px;
+}
+.desktop-shell main button,
+.desktop-shell main a[class*="border"] {
+  transition: border-radius .18s ease, background-color .18s ease, border-color .18s ease;
+}
+.desktop-shell main a[class*="border"]:not([class*="rounded-full"]),
+.desktop-shell main button[class*="border"]:not([class*="rounded-full"]) {
+  border-radius: 14px;
+}
+
+/* Notes drawer uses these exact class names in NotesDrawer.tsx */
+.notes-toggle { border-radius: 999px !important; }
+.notes-drawer {
+  border-radius: 24px 0 0 24px !important;
+  border-left-color: #292929 !important;
+  box-shadow: -18px 0 55px rgba(0,0,0,.34);
+}
+.notes-head { border-bottom-color: #292929 !important; }
+.notes-search { border: 1px solid #292929; border-radius: 14px !important; }
+.notes-card {
+  border: 1px solid #292929 !important;
+  border-radius: 15px !important;
+  margin-bottom: 8px;
+  background: #101010;
+}
+.notes-title-input, .notes-textarea {
+  border: 1px solid #292929 !important;
+  border-radius: 14px !important;
+}
+.notes-btn { border-radius: 999px !important; }
+.notes-scrim { backdrop-filter: blur(3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav, .mobile-post, .notes-card { transition: none !important; }
+}
