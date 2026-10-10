@@ -57,7 +57,7 @@ export default function InstallPage() {
         <p>Push notifications on iPhone require iOS 16.4 or later and SHB must be added to the Home Screen first. Notifications are enabled separately inside SHB.</p>
       </div>
 
-      <Link href="/login" className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-white/90">
+      <Link href="/" className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-black transition hover:bg-white/90">
         <Download className="h-4 w-4" />
         Open SHB
       </Link>
