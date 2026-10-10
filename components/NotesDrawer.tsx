@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Pin, Plus, Search, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Pin, Plus, Search, X, Trash2, Save } from "lucide-react";
 
 type Note = {
   id: string;
@@ -96,6 +96,17 @@ export function NotesDrawer() {
       .sort((a, b) => Number(b.pinned) - Number(a.pinned) || Date.parse(b.updated_at) - Date.parse(a.updated_at)));
   }
 
+  function saveNote() {
+    if (!selectedNote || !loaded) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+      setStatus("Note saved locally · only this browser");
+      setError("");
+    } catch {
+      setError("Couldn't save locally. Check browser storage space/settings.");
+    }
+  }
+
   function deleteNote() {
     if (!selected) return;
     setNotes(items => items.filter(note => note.id !== selected));
@@ -141,6 +152,7 @@ export function NotesDrawer() {
           <label className="notes-field-label">Title<input className="notes-title-input" value={selectedNote?.title ?? ""} maxLength={80} onChange={event => updateSelected({ title: event.target.value })} placeholder="Title"/></label>
           <label className="notes-field-label">Note<textarea className="notes-textarea" value={selectedNote?.content ?? ""} maxLength={20000} onChange={event => updateSelected({ content: event.target.value })} placeholder="Write something. Only you can see this."/></label>
           <div className="notes-actions">
+            <button className="notes-btn notes-primary" type="button" onClick={saveNote} disabled={!selectedNote || !loaded}><Save size={13}/> Save note</button>
             <button className="notes-btn" type="button" onClick={() => selectedNote && updateSelected({ pinned: !selectedNote.pinned })}><Pin size={13}/>{selectedNote?.pinned ? "Unpin" : "Pin"}</button>
             <button className="notes-btn notes-delete" type="button" onClick={deleteNote}><Trash2 size={13}/> Delete</button>
           </div>
