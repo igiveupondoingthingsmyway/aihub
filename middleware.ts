@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = ["/login", "/signup", "/auth"];
+const PUBLIC_PREFIXES = ["/login", "/signup", "/auth", "/install"];
 const SUPABASE_URL = "https://pybzgbteslipuyobmqdc.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_sXxkFu7n8eqSUgtP8BFc8Q_G9Gj-bAi";
 
