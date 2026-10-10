@@ -1046,3 +1046,150 @@ button, input, textarea, select {
 @media (prefers-reduced-motion: reduce) {
   .mobile-nav, .mobile-post, .notes-card { transition: none !important; }
 }
+
+
+/* SHB global roundness pass: message bubbles, cards, frames and controls */
+:root {
+  --shb-radius-message: 18px;
+  --shb-radius-frame: 20px;
+  --shb-radius-control: 13px;
+}
+
+/* Remove square corners left by utility classes across desktop and mobile */
+:where(.desktop-shell, .mobile-shell) :where([class~="rounded-none"]) {
+  border-radius: var(--shb-radius-frame) !important;
+}
+
+/* Framed surfaces: cards, panels, forms and content blocks */
+:where(.desktop-shell main, .mobile-shell) :where(
+  article,
+  [role="dialog"],
+  [role="alertdialog"],
+  [class*="message-bubble"],
+  [class*="messageBubble"],
+  [class*="chat-bubble"],
+  [class*="chatBubble"],
+  [class*="message-content"],
+  [class*="message-content"],
+  [class*="comment-card"],
+  [class*="profile-card"],
+  [class*="tool-card"],
+  [class*="post-card"]
+) {
+  border-radius: var(--shb-radius-frame) !important;
+}
+
+/* Any full-border Tailwind surface with padding becomes a rounded frame.
+   Direction-only borders (dividers) are deliberately excluded. */
+:where(.desktop-shell main, .mobile-shell) :where(
+  [class*="border"][class*="p-"]:not([class~="border-b"]):not([class~="border-t"]):not([class~="border-l"]):not([class~="border-r"]),
+  [class*="border-line"].border:not([class~="border-b"]):not([class~="border-t"]):not([class~="border-l"]):not([class~="border-r"])
+) {
+  border-radius: var(--shb-radius-frame) !important;
+}
+
+/* Chat messages and text bubbles — keep them pill-soft without changing layout */
+:where(.desktop-shell main, .mobile-shell) :where(
+  [class*="message"],
+  [class*="Message"],
+  [class*="bubble"],
+  [class*="Bubble"],
+  .sticker-msg
+) {
+  border-radius: var(--shb-radius-message);
+}
+:where(.desktop-shell main, .mobile-shell) :where(
+  [class*="message"] [class*="bg-"],
+  [class*="Message"] [class*="bg-"],
+  [class*="bubble"] [class*="bg-"],
+  [class*="Bubble"] [class*="bg-"]
+) {
+  border-radius: var(--shb-radius-message) !important;
+}
+
+/* Notes, settings, dialogs, search fields and every control */
+.notes-drawer,
+.notes-card,
+.notes-search,
+.notes-title-input,
+.notes-textarea,
+.mobile-search-results,
+.mobile-profile-card,
+.mobile-chat-list,
+.mobile-empty,
+.mobile-error,
+.mobile-form input,
+.mobile-form textarea,
+.mobile-form button,
+.mobile-form > a,
+.mobile-network-search,
+.mobile-comment-input,
+.mobile-chat-page form input,
+.mobile-chat-page form button {
+  border-radius: var(--shb-radius-frame) !important;
+}
+:where(.desktop-shell main, .mobile-shell) :where(input, textarea, select, button, a[class*="border"], [role="button"]) {
+  border-radius: var(--shb-radius-control);
+}
+:where(.desktop-shell main, .mobile-shell) :where(button[class*="rounded-none"], a[class*="rounded-none"]) {
+  border-radius: var(--shb-radius-control) !important;
+}
+
+/* Preserve intentionally circular avatars, badges and round icon buttons */
+:where(.desktop-shell, .mobile-shell) :where(
+  .mobile-avatar,
+  .mobile-profile-avatar,
+  .mobile-user img,
+  .mobile-user > span,
+  .mobile-header-icon,
+  .mobile-notification-button,
+  .mobile-person > button,
+  .mobile-icon,
+  .notes-toggle,
+  .notes-close
+) {
+  border-radius: 999px !important;
+}
+
+/* Rounded notification and compose panels, while keeping full-screen overlays full-screen */
+.mobile-overlay-header,
+.mobile-notification-panel-header,
+.mobile-create-meta,
+.mobile-notification-row {
+  border-color: var(--shb-border-soft);
+}
+.mobile-create-form textarea { border-radius: 18px !important; }
+.mobile-create-meta button { border-radius: 14px !important; }
+
+@media (max-width: 767px) {
+  .mobile-post,
+  .mobile-search-results,
+  .mobile-chat-list,
+  .mobile-profile-card,
+  .mobile-empty,
+  .mobile-error,
+  .mobile-form input,
+  .mobile-form textarea,
+  .mobile-form button,
+  .mobile-form > a,
+  .mobile-network-search,
+  .mobile-comment-input,
+  .mobile-chat-page form input,
+  .mobile-chat-page form button,
+  .notes-card,
+  .notes-search,
+  .notes-title-input,
+  .notes-textarea {
+    border-radius: 18px !important;
+  }
+  .mobile-post-actions button { border-radius: 999px !important; }
+  .mobile-comments { border-radius: 16px !important; }
+  .mobile-nav { border-radius: 24px !important; }
+}
+
+/* Desktop chat's message area and panels */
+.desktop-shell main [class*="max-w-\\[80\\%\\]"],
+.desktop-shell main [class*="max-w-\\[82\\%\\]"],
+.desktop-shell main [class*="sticker-msg"] {
+  border-radius: var(--shb-radius-message) !important;
+}
