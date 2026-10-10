@@ -676,3 +676,207 @@ button, input, textarea, select { font-weight: 400; }
 .notes-head { flex: 0 0 auto; background: var(--bg); border-bottom: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 .notes-btn:disabled { opacity: .45; cursor: not-allowed; }
 .notes-actions .notes-primary { margin-right: auto; }
+
+
+/* SHB rounded visual system — design-only overrides, existing behavior preserved */
+:root {
+  --shb-radius-sm: 12px;
+  --shb-radius-md: 16px;
+  --shb-radius-card: 20px;
+  --shb-radius-panel: 24px;
+  --shb-border-soft: color-mix(in srgb, var(--line, #292929) 82%, transparent);
+}
+
+button, input, textarea, select {
+  border-radius: var(--shb-radius-sm);
+}
+:where(a, button, input, textarea, select, [role="button"]) {
+  transition: border-color .18s ease, background-color .18s ease, color .18s ease, opacity .18s ease;
+}
+:where(input, textarea, select):focus-visible {
+  outline: 1px solid var(--fg, #ededed);
+  outline-offset: 2px;
+}
+:where(.rounded-none) { border-radius: var(--shb-radius-sm); }
+
+/* Softer desktop surfaces without changing the page structure */
+.desktop-shell :where(article, [class*="border-line"].rounded-none, [class*="border border-line"]) {
+  border-color: var(--shb-border-soft);
+}
+.desktop-shell :where(input, textarea, select) {
+  border-radius: var(--shb-radius-md);
+}
+.desktop-shell :where(button, a[role="button"]) {
+  border-radius: var(--shb-radius-sm);
+}
+
+/* Mobile header and floating navigation */
+.mobile-header {
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--bg, #0b0b0b) 92%, transparent);
+  backdrop-filter: blur(18px);
+}
+.mobile-header-icon,
+.mobile-notification-button,
+.mobile-icon {
+  border-radius: 999px;
+}
+.mobile-nav {
+  inset-inline: 12px;
+  bottom: calc(env(safe-area-inset-bottom) + 10px);
+  height: 62px;
+  padding-bottom: 0;
+  border: 1px solid var(--shb-border-soft);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--bg, #0b0b0b) 88%, transparent);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.28);
+  overflow: hidden;
+}
+.mobile-nav a.active::before { display: none; }
+.mobile-nav a.active { color: var(--fg, #f1f1f1); }
+.mobile-nav a.active svg { opacity: 1; }
+.mobile-create-button {
+  width: 42px;
+  height: 42px;
+  margin: auto;
+  border: 0;
+  border-radius: 15px;
+  box-shadow: 0 2px 12px rgba(255,255,255,.08);
+}
+.mobile-content {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
+/* Posts become individual soft cards instead of sharp-edged rows */
+.mobile-post-list { padding: 8px 12px 18px; }
+.mobile-post {
+  margin-bottom: 12px;
+  padding: 17px 15px;
+  border: 1px solid var(--shb-border-soft);
+  border-radius: var(--shb-radius-card);
+  background: color-mix(in srgb, var(--bg, #0b0b0b) 94%, #fff 6%);
+}
+.mobile-post:last-child { border-bottom: 1px solid var(--shb-border-soft); }
+.mobile-post-head { gap: 10px; }
+.mobile-user img, .mobile-user > span { border-radius: 50%; }
+.mobile-post-actions { gap: 10px; }
+.mobile-post-actions button {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--shb-border-soft);
+  border-radius: 999px;
+  background: rgba(255,255,255,.025);
+}
+.mobile-post-actions button.liked {
+  border-color: color-mix(in srgb, var(--fg, #fff) 32%, transparent);
+  background: rgba(255,255,255,.08);
+}
+
+/* Rounded search, people, chats, profile and form surfaces */
+.mobile-network-search {
+  height: 46px;
+  border-color: var(--shb-border-soft);
+  border-radius: 15px;
+  background: rgba(255,255,255,.025);
+}
+.mobile-search-results,
+.mobile-profile-card {
+  overflow: hidden;
+  border: 1px solid var(--shb-border-soft);
+  border-radius: var(--shb-radius-card);
+  background: rgba(255,255,255,.018);
+}
+.mobile-person, .mobile-row { padding-inline: 14px; }
+.mobile-person:first-child, .mobile-row:first-child { border-top: 0; }
+.mobile-person > button, .mobile-icon { border-radius: 999px; }
+.mobile-chat-list {
+  overflow: hidden;
+  border: 1px solid var(--shb-border-soft);
+  border-radius: var(--shb-radius-card);
+  padding: 0 13px;
+  background: rgba(255,255,255,.018);
+}
+.mobile-chat-row { padding-inline: 0; }
+.mobile-avatar { border-radius: 50%; border-color: var(--shb-border-soft); }
+.mobile-profile-avatar { border-radius: 50%; border-color: var(--shb-border-soft); }
+.mobile-banner { border-radius: 0; }
+.mobile-profile-head { border-top-color: var(--shb-border-soft); }
+.mobile-form input, .mobile-form textarea {
+  border-color: var(--shb-border-soft);
+  border-radius: 14px;
+  background: rgba(255,255,255,.025);
+  padding: 14px;
+}
+.mobile-form button, .mobile-form > a { border-radius: 14px; }
+.mobile-form .mobile-toggle { border-radius: 0; }
+.mobile-error { border-radius: 14px; }
+.mobile-empty {
+  border: 1px solid var(--shb-border-soft);
+  border-radius: var(--shb-radius-card);
+  background: rgba(255,255,255,.018);
+}
+.mobile-loading { border-radius: var(--shb-radius-card); }
+.mobile-tabs { border-bottom-color: var(--shb-border-soft); }
+.mobile-tabs button { border-right-color: var(--shb-border-soft); }
+.mobile-tabs button.active { box-shadow: inset 0 -2px 0 var(--fg, #fff); }
+
+/* Overlays remain opaque; soften their controls and inner panels */
+.mobile-overlay {
+  background: var(--bg, #0b0b0b);
+}
+.mobile-overlay-header { border-bottom-color: var(--shb-border-soft); }
+.mobile-create-meta { border-top-color: var(--shb-border-soft); }
+.mobile-create-meta button { border-radius: 15px 0 0 0; }
+.mobile-notification-row { border-bottom-color: var(--shb-border-soft); }
+.mobile-notification-panel-header { border-bottom-color: var(--shb-border-soft); }
+.mobile-notification-panel-header button { border-radius: 999px; }
+
+/* Notes drawer: rounded cards and rounded leading edge */
+.notes-drawer {
+  border-radius: 24px 0 0 24px;
+  border-left-color: var(--shb-border-soft);
+  box-shadow: -18px 0 55px rgba(0,0,0,.34);
+}
+.notes-head { border-bottom-color: var(--shb-border-soft); }
+.notes-search { border-radius: 14px; }
+.notes-card {
+  border: 1px solid var(--shb-border-soft);
+  border-radius: 15px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,.025);
+}
+.notes-title-input, .notes-textarea { border-radius: 14px; }
+.notes-btn { border-radius: 999px; }
+.notes-scrim { backdrop-filter: blur(3px); }
+
+@media (max-width: 767px) {
+  .mobile-nav {
+    inset-inline: 10px;
+    bottom: calc(env(safe-area-inset-bottom) + 8px);
+    border-radius: 22px;
+  }
+  .mobile-content {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+  .mobile-page-title {
+    border-bottom-color: var(--shb-border-soft);
+  }
+  .mobile-page-title h1 {
+    font-size: 38px !important;
+    line-height: 1 !important;
+    letter-spacing: -.065em !important;
+  }
+  .mobile-tools-page .mobile-page-title h1 { font-size: 38px !important; }
+  .mobile-chat-page form input { border-radius: 999px !important; }
+  .mobile-chat-page form button { border-radius: 15px !important; }
+  .mobile-notification-overlay { border-radius: 0; }
+  .notes-drawer {
+    inset-inline: 8px 0;
+    width: auto;
+    border-radius: 24px 0 0 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(a, button, input, textarea, select, [role="button"]) { transition: none; }
+}
