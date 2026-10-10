@@ -660,3 +660,19 @@ button, input, textarea, select { font-weight: 400; }
   .notes-textarea { flex: 1 1 auto; min-height: min(38vh, 300px); }
   .notes-actions { gap: 6px; }
 }
+
+
+/* Keep the global navigation visually separate from the Notes drawer */
+@media (min-width: 768px) {
+  .notes-drawer { top: 64px; height: calc(100dvh - 64px); inset-inline-end: 0; }
+  .notes-scrim { top: 64px; }
+}
+@media (max-width: 767px) {
+  .notes-drawer { top: calc(52px + env(safe-area-inset-top)); height: calc(100dvh - 52px - env(safe-area-inset-top)); inset-inline-end: 0; }
+  .notes-scrim { top: calc(52px + env(safe-area-inset-top)); }
+  .notes-toggle { z-index: 49 !important; right: 94px; }
+}
+.notes-drawer { background: var(--bg) !important; border-left: 1px solid var(--line); box-shadow: -18px 0 45px rgba(0,0,0,.28); }
+.notes-head { flex: 0 0 auto; background: var(--bg); border-bottom: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.notes-btn:disabled { opacity: .45; cursor: not-allowed; }
+.notes-actions .notes-primary { margin-right: auto; }
